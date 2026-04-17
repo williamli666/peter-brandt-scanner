@@ -274,8 +274,12 @@ def main():
     top_symbols = pick_top_symbols(TOP_N_CANDIDATES)
     raw_candidates = [build_candidate(sym, all_patterns) for sym in top_symbols]
 
-    # Drop 观望/neutral — no clear direction is not actionable
-    candidates = [c for c in raw_candidates if c.get("direction") in ("bull", "bear")]
+    # Filter 1: drop 观望/neutral — no clear direction is not actionable
+    after_dir = [c for c in raw_candidates if c.get("direction") in ("bull", "bear")]
+
+    # Filter 2: minimum R:R 3:1 (Brandt's core risk rule) — nulls dropped
+    MIN_RR = 3.0
+    candidates = [c for c in after_dir if (c.get("trade", {}).get("rr") or 0) >= MIN_RR]
 
     # Sort by recommendation strength:
     #   primary = finalScore (percentile score)
@@ -285,7 +289,8 @@ def main():
     candidates.sort(key=_strength, reverse=True)
     print(
         f"Built {len(candidates)} actionable candidates "
-        f"(dropped {len(raw_candidates) - len(candidates)} neutral)",
+        f"(raw {len(raw_candidates)} → -{len(raw_candidates) - len(after_dir)} neutral "
+        f"→ -{len(after_dir) - len(candidates)} below R:R {MIN_RR}:1)",
         flush=True,
     )
 
