@@ -1106,6 +1106,14 @@ const SCAN_UI = {
     dailyTitle: "Daily Gary Norden Analysis",
     dailyHint: "Each report analyzes the prior US trading session through Gary Norden's framework (yields, correlation, sector rotation, geopolitical risk).",
     dailyEmpty: "No daily reports generated yet.",
+    futures: "Futures",
+    futuresTitle: "China Futures Daily",
+    futuresHint: "Top-20 seat positioning across SHFE/CZCE/DCE/GFEX + retail-vs-institution divergence + 1h technicals.",
+    futuresEmpty: "No futures reports generated yet.",
+    munger: "Munger",
+    mungerTitle: "Munger 200-Week MA Scan",
+    mungerHint: '"Buy high-quality stocks touching the 200-week MA" — Munger. Scans HS300 + US blue chips for MA200 proximity.',
+    mungerEmpty: "No Munger scans generated yet.",
   },
   zh: {
     gallery: "形态图鉴",
@@ -1153,6 +1161,14 @@ const SCAN_UI = {
     dailyTitle: "每日 Gary Norden 视角分析",
     dailyHint: "每份报告基于 Gary Norden 框架（收益率/相关性/板块轮动/地缘风险）分析上一个美股交易日。",
     dailyEmpty: "尚无每日报告。",
+    futures: "期货日报",
+    futuresTitle: "中国期货日日报",
+    futuresHint: "四大交易所 (SHFE/CZCE/DCE/GFEX) 前20席位持仓 + 机构 vs 散户分歧 + 1小时技术面。",
+    futuresEmpty: "尚无期货日日报。",
+    munger: "芒格扫描",
+    mungerTitle: "芒格200周均线扫描",
+    mungerHint: "芒格名言：触及200周均线的优质股是最好的买入时机。扫描沪深300 + 美股蓝筹。",
+    mungerEmpty: "尚无芒格扫描报告。",
   },
 };
 
@@ -1170,19 +1186,20 @@ const PATTERN_ZH_MAP = {
 const tabGallery = document.querySelector("#tab-gallery");
 const tabScan = document.querySelector("#tab-scan");
 const tabDaily = document.querySelector("#tab-daily");
+const tabFutures = document.querySelector("#tab-futures");
+const tabMunger = document.querySelector("#tab-munger");
 const tabBacktest = document.querySelector("#tab-backtest");
 const viewGallery = document.querySelector("#view-gallery");
 const viewScan = document.querySelector("#view-scan");
 const viewDaily = document.querySelector("#view-daily");
+const viewFutures = document.querySelector("#view-futures");
+const viewMunger = document.querySelector("#view-munger");
 const viewBacktest = document.querySelector("#view-backtest");
 const scanGrid = document.querySelector("#scan-grid");
 const scanEmpty = document.querySelector("#scan-empty");
 const universeGroupsEl = document.querySelector("#universe-groups");
 const backtestResultsEl = document.querySelector("#backtest-results");
 const backtestEmptyEl = document.querySelector("#backtest-empty");
-const dailyListEl = document.querySelector("#daily-list");
-const dailyCountEl = document.querySelector("#daily-count");
-const dailyEmptyEl = document.querySelector("#daily-empty");
 
 let scanData = null;
 let scanLoading = false;
@@ -1333,47 +1350,88 @@ const PATTERN_ZH_MAP_REV = Object.fromEntries(
   }).map(([en, zh]) => [zh, en])
 );
 
-let dailyData = null;
-let dailyLoading = false;
 let backtestData = null;
 let backtestLoading = false;
 
-async function loadDailyData() {
-  if (dailyData || dailyLoading) return;
-  dailyLoading = true;
+// Generic report tab (daily / futures / munger) — all share the same data
+// shape: {count, entries: [{date, title, preview, file}]}
+const REPORT_TABS = {
+  daily: {
+    indexPath: "./data/daily_index.json",
+    listEl: document.querySelector("#daily-list"),
+    countEl: document.querySelector("#daily-count"),
+    emptyEl: document.querySelector("#daily-empty"),
+    labelAttr: "daily-label",
+    titleKey: "dailyTitle",
+    hintKey: "dailyHint",
+    emptyKey: "dailyEmpty",
+    data: null,
+    loading: false,
+  },
+  futures: {
+    indexPath: "./data/futures_index.json",
+    listEl: document.querySelector("#futures-list"),
+    countEl: document.querySelector("#futures-count"),
+    emptyEl: document.querySelector("#futures-empty"),
+    labelAttr: "futures-label",
+    titleKey: "futuresTitle",
+    hintKey: "futuresHint",
+    emptyKey: "futuresEmpty",
+    data: null,
+    loading: false,
+  },
+  munger: {
+    indexPath: "./data/munger_index.json",
+    listEl: document.querySelector("#munger-list"),
+    countEl: document.querySelector("#munger-count"),
+    emptyEl: document.querySelector("#munger-empty"),
+    labelAttr: "munger-label",
+    titleKey: "mungerTitle",
+    hintKey: "mungerHint",
+    emptyKey: "mungerEmpty",
+    data: null,
+    loading: false,
+  },
+};
+
+async function loadReport(key) {
+  const t = REPORT_TABS[key];
+  if (!t || t.data || t.loading) return;
+  t.loading = true;
   try {
-    const resp = await fetch("./data/daily_index.json", { cache: "no-cache" });
+    const resp = await fetch(t.indexPath, { cache: "no-cache" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    dailyData = await resp.json();
-    renderDailyView();
+    t.data = await resp.json();
+    renderReport(key);
   } catch (err) {
-    dailyEmptyEl.hidden = false;
-    dailyEmptyEl.textContent = `${SCAN_UI[currentLanguage].errorLoad || "Load failed"} (${err.message})`;
+    t.emptyEl.hidden = false;
+    t.emptyEl.textContent = `${SCAN_UI[currentLanguage].errorLoad || "Load failed"} (${err.message})`;
   } finally {
-    dailyLoading = false;
+    t.loading = false;
   }
 }
 
-function renderDailyView() {
-  if (!dailyData) return;
+function renderReport(key) {
+  const t = REPORT_TABS[key];
+  if (!t || !t.data) return;
   const ui = SCAN_UI[currentLanguage];
-  dailyCountEl.textContent = dailyData.count ?? 0;
+  t.countEl.textContent = t.data.count ?? 0;
 
-  document.querySelectorAll("[data-daily-label]").forEach((el) => {
-    const key = el.dataset.dailyLabel;
-    if (key === "title") el.textContent = ui.dailyTitle;
-    if (key === "hint") el.textContent = ui.dailyHint;
+  document.querySelectorAll(`[data-${t.labelAttr}]`).forEach((el) => {
+    const v = el.getAttribute(`data-${t.labelAttr}`);
+    if (v === "title") el.textContent = ui[t.titleKey];
+    if (v === "hint") el.textContent = ui[t.hintKey];
   });
 
-  const entries = dailyData.entries || [];
+  const entries = t.data.entries || [];
   if (entries.length === 0) {
-    dailyEmptyEl.hidden = false;
-    dailyEmptyEl.textContent = ui.dailyEmpty;
-    dailyListEl.innerHTML = "";
+    t.emptyEl.hidden = false;
+    t.emptyEl.textContent = ui[t.emptyKey];
+    t.listEl.innerHTML = "";
     return;
   }
-  dailyEmptyEl.hidden = true;
-  dailyListEl.innerHTML = entries.map((e) => `
+  t.emptyEl.hidden = true;
+  t.listEl.innerHTML = entries.map((e) => `
     <a class="daily-entry" href="./data/${encodeURI(e.file)}" target="_blank" rel="noopener">
       <div class="daily-entry-head">
         <span class="daily-entry-date">${escapeHtml(e.date)}</span>
@@ -1573,19 +1631,27 @@ function switchView(view) {
   tabGallery.classList.toggle("is-active", view === "gallery");
   tabScan.classList.toggle("is-active", view === "scan");
   tabDaily.classList.toggle("is-active", view === "daily");
+  tabFutures.classList.toggle("is-active", view === "futures");
+  tabMunger.classList.toggle("is-active", view === "munger");
   tabBacktest.classList.toggle("is-active", view === "backtest");
   viewGallery.hidden = view !== "gallery";
   viewScan.hidden = view !== "scan";
   viewDaily.hidden = view !== "daily";
+  viewFutures.hidden = view !== "futures";
+  viewMunger.hidden = view !== "munger";
   viewBacktest.hidden = view !== "backtest";
   if (view === "scan") loadScanData();
-  if (view === "daily") loadDailyData();
+  if (view === "daily") loadReport("daily");
+  if (view === "futures") loadReport("futures");
+  if (view === "munger") loadReport("munger");
   if (view === "backtest") loadBacktestData();
 }
 
 tabGallery.addEventListener("click", () => switchView("gallery"));
 tabScan.addEventListener("click", () => switchView("scan"));
 tabDaily.addEventListener("click", () => switchView("daily"));
+tabFutures.addEventListener("click", () => switchView("futures"));
+tabMunger.addEventListener("click", () => switchView("munger"));
 tabBacktest.addEventListener("click", () => switchView("backtest"));
 
 // Re-render scan view when language changes (if already loaded)
@@ -1595,9 +1661,13 @@ function applyLanguageWithScan() {
   tabGallery.textContent = SCAN_UI[currentLanguage].gallery;
   tabScan.textContent = SCAN_UI[currentLanguage].scan;
   tabDaily.textContent = SCAN_UI[currentLanguage].daily;
+  tabFutures.textContent = SCAN_UI[currentLanguage].futures;
+  tabMunger.textContent = SCAN_UI[currentLanguage].munger;
   tabBacktest.textContent = SCAN_UI[currentLanguage].backtest;
   if (scanData) renderScanView();
-  if (dailyData) renderDailyView();
+  ["daily", "futures", "munger"].forEach((k) => {
+    if (REPORT_TABS[k].data) renderReport(k);
+  });
   if (backtestData) renderBacktestView();
 }
 applyLanguageWithScan();

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart Pattern Loaders — Peter Brandt</title>
-    <link rel="stylesheet" href="./style.css?v=14" />
+    <link rel="stylesheet" href="./style.css?v=15" />
   </head>
   <body>
     <main class="page">
@@ -39,6 +39,8 @@
           <button id="tab-gallery" class="view-tab is-active" type="button" role="tab" data-view="gallery">Gallery</button>
           <button id="tab-scan" class="view-tab" type="button" role="tab" data-view="scan">Live Scan</button>
           <button id="tab-daily" class="view-tab" type="button" role="tab" data-view="daily">Daily</button>
+          <button id="tab-futures" class="view-tab" type="button" role="tab" data-view="futures">Futures</button>
+          <button id="tab-munger" class="view-tab" type="button" role="tab" data-view="munger">Munger</button>
           <button id="tab-backtest" class="view-tab" type="button" role="tab" data-view="backtest">Backtest</button>
         </nav>
       </section>
@@ -71,6 +73,30 @@
         </div>
         <div class="daily-list" id="daily-list"></div>
         <p id="daily-empty" class="scan-empty" hidden></p>
+      </section>
+
+      <section class="showcase daily-view" id="view-futures" hidden>
+        <div class="daily-header">
+          <div class="daily-meta">
+            <span class="daily-meta-label" data-futures-label="title">China Futures Daily</span>
+            <span class="daily-meta-count" id="futures-count">—</span>
+          </div>
+          <p class="daily-hint" data-futures-label="hint">Top-20 positioning across SHFE/CZCE/DCE/GFEX + retail-vs-institution divergence + 1h technicals.</p>
+        </div>
+        <div class="daily-list" id="futures-list"></div>
+        <p id="futures-empty" class="scan-empty" hidden></p>
+      </section>
+
+      <section class="showcase daily-view" id="view-munger" hidden>
+        <div class="daily-header">
+          <div class="daily-meta">
+            <span class="daily-meta-label" data-munger-label="title">Munger 200-Week MA Scan</span>
+            <span class="daily-meta-count" id="munger-count">—</span>
+          </div>
+          <p class="daily-hint" data-munger-label="hint">"If all you ever did was buy high-quality stocks on the 200-week moving average, you would beat the S&P 500." — Munger</p>
+        </div>
+        <div class="daily-list" id="munger-list"></div>
+        <p id="munger-empty" class="scan-empty" hidden></p>
       </section>
 
       <section class="showcase backtest-view" id="view-backtest" hidden>
@@ -145,6 +171,6 @@
       </section>
     </div>
 
-    <script src="./main.js?v=14"></script>
+    <script src="./main.js?v=15"></script>
   </body>
 </html>

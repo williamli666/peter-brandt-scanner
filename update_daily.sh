@@ -19,10 +19,10 @@ log "Step 1: running gary_analysis.py"
 cd "$GARY_DIR"
 /usr/bin/python3 gary_analysis.py >> "$LOG" 2>&1 || log "  (analysis skipped or failed)"
 
-# 2. Sync to website data folder
-log "Step 2: syncing to data/daily/"
+# 1b. Sync all three report sources (gary / futures / munger) into data/
+log "Step 1b: building report indices"
 cd "$ROOT"
-python3 build_daily_index.py >> "$LOG" 2>&1
+python3 build_reports.py >> "$LOG" 2>&1
 
 # 3. Deploy to VPS
 log "Step 3: deploying to VPS"
@@ -33,20 +33,30 @@ if [ -z "$VPS_PASS" ]; then
 fi
 
 sshpass -p "$VPS_PASS" ssh -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" \
-  "mkdir -p /var/www/charts/data/daily" >> "$LOG" 2>&1
+  "mkdir -p /var/www/charts/data/daily /var/www/charts/data/futures /var/www/charts/data/munger" >> "$LOG" 2>&1
 
-sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
-  "$ROOT/data/daily_index.json" "$VPS_USER@$VPS_HOST:/var/www/charts/data/" \
-  >> "$LOG" 2>&1
+# Sync index files
+for idx in daily_index.json futures_index.json munger_index.json; do
+  if [ -f "$ROOT/data/$idx" ]; then
+    sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
+      "$ROOT/data/$idx" "$VPS_USER@$VPS_HOST:/var/www/charts/data/" \
+      >> "$LOG" 2>&1
+  fi
+done
 
-sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
-  "$ROOT/data/daily/"*.html "$VPS_USER@$VPS_HOST:/var/www/charts/data/daily/" \
-  >> "$LOG" 2>&1
+# Sync HTML folders
+for sub in daily futures munger; do
+  if ls "$ROOT/data/$sub/"*.html >/dev/null 2>&1; then
+    sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
+      "$ROOT/data/$sub/"*.html "$VPS_USER@$VPS_HOST:/var/www/charts/data/$sub/" \
+      >> "$LOG" 2>&1
+  fi
+done
 
-# 4. Commit new report to git
+# 4. Commit new reports to git
 cd "$ROOT"
-git add data/daily/ data/daily_index.json >> "$LOG" 2>&1 || true
-git commit -m "data: daily Gary Norden analysis $(date +%Y-%m-%d)" >> "$LOG" 2>&1 || log "  (nothing to commit)"
+git add data/daily/ data/futures/ data/munger/ data/*_index.json >> "$LOG" 2>&1 || true
+git commit -m "data: report snapshot $(date +%Y-%m-%d)" >> "$LOG" 2>&1 || log "  (nothing to commit)"
 git push >> "$LOG" 2>&1 || log "  (push failed, continuing)"
 
 log "=== Daily update complete ==="
