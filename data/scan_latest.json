@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T03:09:38+00:00",
+  "generatedAt": "2026-04-17T03:18:48+00:00",
   "dataAsOf": "2026-04-13",
   "summary": {
     "symbolsWithSignal": 69,
@@ -10,14 +10,14 @@
   },
   "candidates": [
     {
-      "symbol": "DBA",
-      "nameEn": "ETF DBA",
-      "nameZh": "农产品",
+      "symbol": "XLV",
+      "nameEn": "ETF XLV",
+      "nameZh": "医疗",
       "category": "stocks_etf",
-      "lastPrice": 27.11,
+      "lastPrice": 146.61,
       "lastDate": "2026-04-13",
       "score": 4,
-      "finalScore": 46.95,
+      "finalScore": 51.43,
       "direction": "bear",
       "primaryPattern": "头肩顶 H&S Top",
       "patterns": [
@@ -25,40 +25,40 @@
           "type": "H&S Top",
           "typeZh": "头肩顶",
           "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
+          "status": "Neckline breached",
+          "statusZh": "已突破颈线",
           "resistance": null,
           "support": null,
-          "ageWeeks": 11
+          "ageWeeks": 7
         },
         {
           "type": "Rectangle",
           "typeZh": "矩形整理中",
           "direction": "neutral",
-          "status": "区间内 (6次触阻力, 6次触支撑)",
-          "statusZh": "区间内 (6次触阻力, 6次触支撑)",
-          "resistance": 27.315,
-          "support": 24.6848,
+          "status": "区间内 (11次触阻力, 7次触支撑)",
+          "statusZh": "区间内 (11次触阻力, 7次触支撑)",
+          "resistance": 159.4844,
+          "support": 141.8231,
           "ageWeeks": null
         }
       ],
       "trade": {
-        "entry": 27.315,
-        "stop": 27.37,
-        "target": 24.93,
-        "riskPct": 0.96,
-        "rr": 8.38
+        "entry": 153.2201,
+        "stop": 151.2283,
+        "target": 146.5077,
+        "riskPct": 3.15,
+        "rr": 3.37
       }
     },
     {
-      "symbol": "EURJPY=X",
-      "nameEn": "EUR/JPY",
-      "nameZh": "欧元/日元",
-      "category": "forex",
-      "lastPrice": 187.682,
+      "symbol": "ZB=F",
+      "nameEn": "T-Bond",
+      "nameZh": "30年国债",
+      "category": "futures",
+      "lastPrice": 113.6562,
       "lastDate": "2026-04-13",
       "score": 4,
-      "finalScore": 46.72,
+      "finalScore": 49.89,
       "direction": "bear",
       "primaryPattern": "头肩顶 H&S Top",
       "patterns": [
@@ -66,29 +66,142 @@
           "type": "H&S Top",
           "typeZh": "头肩顶",
           "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
+          "status": "Neckline breached",
+          "statusZh": "已突破颈线",
           "resistance": null,
           "support": null,
-          "ageWeeks": 9
+          "ageWeeks": 20
         },
         {
           "type": "Rectangle",
           "typeZh": "矩形整理中",
           "direction": "neutral",
-          "status": "区间内 (19次触阻力, 5次触支撑)",
-          "statusZh": "区间内 (19次触阻力, 5次触支撑)",
-          "resistance": 186.8417,
-          "support": 175.9467,
+          "status": "区间内 (12次触阻力, 9次触支撑)",
+          "statusZh": "区间内 (12次触阻力, 9次触支撑)",
+          "resistance": 119.5078,
+          "support": 112.4219,
           "ageWeeks": null
         }
       ],
       "trade": {
-        "entry": 186.8417,
-        "stop": 187.737,
-        "target": 178.0032,
-        "riskPct": 0.03,
-        "rr": 175.98
+        "entry": 116.1875,
+        "stop": 115.7188,
+        "target": 112.7812,
+        "riskPct": 1.81,
+        "rr": 7.27
+      }
+    },
+    {
+      "symbol": "ZN=F",
+      "nameEn": "T-Note",
+      "nameZh": "10年国债",
+      "category": "futures",
+      "lastPrice": 111.1875,
+      "lastDate": "2026-04-13",
+      "score": 4,
+      "finalScore": 49.1,
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "patterns": [
+        {
+          "type": "H&S Top",
+          "typeZh": "头肩顶",
+          "direction": "bear",
+          "status": "Testing neckline",
+          "statusZh": "测试颈线中",
+          "resistance": null,
+          "support": null,
+          "ageWeeks": 20
+        },
+        {
+          "type": "Rectangle",
+          "typeZh": "矩形整理中",
+          "direction": "neutral",
+          "status": "区间内 (22次触阻力, 19次触支撑)",
+          "statusZh": "区间内 (22次触阻力, 19次触支撑)",
+          "resistance": 113.9414,
+          "support": 110.2305,
+          "ageWeeks": null
+        }
+      ],
+      "trade": {
+        "entry": 112.2969,
+        "stop": 112.25,
+        "target": 110.5312,
+        "riskPct": 0.96,
+        "rr": 37.65
+      }
+    },
+    {
+      "symbol": "ZW=F",
+      "nameEn": "Wheat",
+      "nameZh": "小麦",
+      "category": "futures",
+      "lastPrice": 608.0,
+      "lastDate": "2026-04-13",
+      "score": 3,
+      "finalScore": 48.43,
+      "direction": "bull",
+      "primaryPattern": "头肩底 Inv H&S",
+      "patterns": [
+        {
+          "type": "Inverse H&S",
+          "typeZh": "头肩底",
+          "direction": "bull",
+          "status": "Neckline breached",
+          "statusZh": "已突破颈线",
+          "resistance": null,
+          "support": null,
+          "ageWeeks": 20
+        }
+      ],
+      "trade": {
+        "entry": 555.0,
+        "stop": 567.5,
+        "target": 617.75,
+        "riskPct": 6.66,
+        "rr": 5.02
+      }
+    },
+    {
+      "symbol": "EURCHF=X",
+      "nameEn": "EUR/CHF",
+      "nameZh": "欧元/瑞郎",
+      "category": "forex",
+      "lastPrice": 0.9226,
+      "lastDate": "2026-04-13",
+      "score": 4,
+      "finalScore": 46.23,
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "patterns": [
+        {
+          "type": "H&S Top",
+          "typeZh": "头肩顶",
+          "direction": "bear",
+          "status": "Testing neckline",
+          "statusZh": "测试颈线中",
+          "resistance": null,
+          "support": null,
+          "ageWeeks": 13
+        },
+        {
+          "type": "Rectangle",
+          "typeZh": "矩形整理中",
+          "direction": "neutral",
+          "status": "区间内 (21次触阻力, 12次触支撑)",
+          "statusZh": "区间内 (21次触阻力, 12次触支撑)",
+          "resistance": 0.9374,
+          "support": 0.9018,
+          "ageWeeks": null
+        }
+      ],
+      "trade": {
+        "entry": 0.9276,
+        "stop": 0.9266,
+        "target": 0.9157,
+        "riskPct": 0.43,
+        "rr": 11.9
       }
     },
     {
@@ -125,22 +238,22 @@
         }
       ],
       "trade": {
-        "entry": 55.4067,
+        "entry": 52.4902,
         "stop": 52.41,
         "target": 48.7494,
         "riskPct": 0.73,
-        "rr": 8.63
+        "rr": 46.64
       }
     },
     {
-      "symbol": "6E=F",
-      "nameEn": "Euro FX",
-      "nameZh": "欧元",
+      "symbol": "ZF=F",
+      "nameEn": "T-Note",
+      "nameZh": "5年国债",
       "category": "futures",
-      "lastPrice": 1.1809,
+      "lastPrice": 108.2891,
       "lastDate": "2026-04-13",
-      "score": 4,
-      "finalScore": 44.13,
+      "score": 3,
+      "finalScore": 43.32,
       "direction": "bear",
       "primaryPattern": "头肩顶 H&S Top",
       "patterns": [
@@ -148,37 +261,27 @@
           "type": "H&S Top",
           "typeZh": "头肩顶",
           "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
+          "status": "Testing neckline",
+          "statusZh": "测试颈线中",
           "resistance": null,
           "support": null,
-          "ageWeeks": 17
-        },
-        {
-          "type": "Rectangle",
-          "typeZh": "矩形整理中",
-          "direction": "neutral",
-          "status": "区间内 (18次触阻力, 17次触支撑)",
-          "statusZh": "区间内 (18次触阻力, 17次触支撑)",
-          "resistance": 1.1918,
-          "support": 1.1424,
-          "ageWeeks": null
+          "ageWeeks": 20
         }
       ],
       "trade": {
-        "entry": 1.1918,
-        "stop": 1.1839,
-        "target": 1.1146,
-        "riskPct": 0.26,
-        "rr": 22.1
+        "entry": 108.9844,
+        "stop": 108.9688,
+        "target": 107.7656,
+        "riskPct": 0.63,
+        "rr": 78.13
       }
     },
     {
-      "symbol": "EURGBP=X",
-      "nameEn": "EUR/GBP",
-      "nameZh": "欧元/英镑",
-      "category": "forex",
-      "lastPrice": 0.8712,
+      "symbol": "ZT=F",
+      "nameEn": "T-Note",
+      "nameZh": "2年国债",
+      "category": "futures",
+      "lastPrice": 103.7656,
       "lastDate": "2026-04-13",
       "score": 3,
       "finalScore": 42.84,
@@ -193,251 +296,15 @@
           "statusZh": "测试颈线中",
           "resistance": null,
           "support": null,
-          "ageWeeks": 12
+          "ageWeeks": 20
         }
       ],
       "trade": {
-        "entry": null,
-        "stop": 0.8742,
-        "target": 0.8448,
-        "riskPct": 0.35,
-        "rr": 8.8
-      }
-    },
-    {
-      "symbol": "IWM",
-      "nameEn": "2000ETF IWM",
-      "nameZh": "罗素",
-      "category": "stocks_etf",
-      "lastPrice": 269.95,
-      "lastDate": "2026-04-13",
-      "score": 4,
-      "finalScore": 40.3,
-      "direction": "bear",
-      "primaryPattern": "头肩顶 H&S Top",
-      "patterns": [
-        {
-          "type": "H&S Top",
-          "typeZh": "头肩顶",
-          "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
-          "resistance": null,
-          "support": null,
-          "ageWeeks": 9
-        },
-        {
-          "type": "Rectangle",
-          "typeZh": "矩形整理中",
-          "direction": "neutral",
-          "status": "区间内 (8次触阻力, 3次触支撑)",
-          "statusZh": "区间内 (8次触阻力, 3次触支撑)",
-          "resistance": 269.8831,
-          "support": 232.6272,
-          "ageWeeks": null
-        }
-      ],
-      "trade": {
-        "entry": 269.8831,
-        "stop": 270.35,
-        "target": 238.0765,
-        "riskPct": 0.15,
-        "rr": 79.68
-      }
-    },
-    {
-      "symbol": "USDMXN=X",
-      "nameEn": "USD/MXN",
-      "nameZh": "美元/墨西哥比索",
-      "category": "forex",
-      "lastPrice": 17.242,
-      "lastDate": "2026-04-13",
-      "score": 4,
-      "finalScore": 40.19,
-      "direction": "bull",
-      "primaryPattern": "头肩底 Inv H&S",
-      "patterns": [
-        {
-          "type": "Inverse H&S",
-          "typeZh": "头肩底",
-          "direction": "bull",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
-          "resistance": null,
-          "support": null,
-          "ageWeeks": 22
-        },
-        {
-          "type": "Rectangle",
-          "typeZh": "矩形整理中",
-          "direction": "neutral",
-          "status": "区间内 (10次触阻力, 9次触支撑)",
-          "statusZh": "区间内 (10次触阻力, 9次触支撑)",
-          "resistance": 18.5843,
-          "support": 17.1,
-          "ageWeeks": null
-        }
-      ],
-      "trade": {
-        "entry": 18.5843,
-        "stop": 17.1971,
-        "target": 19.5184,
-        "riskPct": 0.26,
-        "rr": 50.7
-      }
-    },
-    {
-      "symbol": "RTY=F",
-      "nameEn": "2000 Russell",
-      "nameZh": "罗素",
-      "category": "futures",
-      "lastPrice": 2735.8,
-      "lastDate": "2026-04-13",
-      "score": 4,
-      "finalScore": 39.4,
-      "direction": "bear",
-      "primaryPattern": "头肩顶 H&S Top",
-      "patterns": [
-        {
-          "type": "H&S Top",
-          "typeZh": "头肩顶",
-          "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
-          "resistance": null,
-          "support": null,
-          "ageWeeks": 9
-        },
-        {
-          "type": "Rectangle",
-          "typeZh": "矩形整理中",
-          "direction": "neutral",
-          "status": "区间内 (8次触阻力, 3次触支撑)",
-          "statusZh": "区间内 (8次触阻力, 3次触支撑)",
-          "resistance": 2733.65,
-          "support": 2357.925,
-          "ageWeeks": null
-        }
-      ],
-      "trade": {
-        "entry": 2733.65,
-        "stop": 2738.2,
-        "target": 2384.4001,
-        "riskPct": 0.09,
-        "rr": 146.42
-      }
-    },
-    {
-      "symbol": "6A=F",
-      "nameEn": "AUD",
-      "nameZh": "澳元",
-      "category": "futures",
-      "lastPrice": 0.7157,
-      "lastDate": "2026-04-13",
-      "score": 4,
-      "finalScore": 38.97,
-      "direction": "bear",
-      "primaryPattern": "头肩顶 H&S Top",
-      "patterns": [
-        {
-          "type": "H&S Top",
-          "typeZh": "头肩顶",
-          "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
-          "resistance": null,
-          "support": null,
-          "ageWeeks": 24
-        },
-        {
-          "type": "Rectangle",
-          "typeZh": "矩形整理中",
-          "direction": "neutral",
-          "status": "区间内 (11次触阻力, 7次触支撑)",
-          "statusZh": "区间内 (11次触阻力, 7次触支撑)",
-          "resistance": 0.7177,
-          "support": 0.6443,
-          "ageWeeks": null
-        }
-      ],
-      "trade": {
-        "entry": 0.7177,
-        "stop": 0.7193,
-        "target": 0.6251,
-        "riskPct": 0.5,
-        "rr": 25.17
-      }
-    },
-    {
-      "symbol": "AUDUSD=X",
-      "nameEn": "AUD/USD",
-      "nameZh": "澳元/美元",
-      "category": "forex",
-      "lastPrice": 0.7163,
-      "lastDate": "2026-04-13",
-      "score": 4,
-      "finalScore": 38.89,
-      "direction": "bear",
-      "primaryPattern": "头肩顶 H&S Top",
-      "patterns": [
-        {
-          "type": "H&S Top",
-          "typeZh": "头肩顶",
-          "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
-          "resistance": null,
-          "support": null,
-          "ageWeeks": 24
-        },
-        {
-          "type": "Rectangle",
-          "typeZh": "矩形整理中",
-          "direction": "neutral",
-          "status": "区间内 (11次触阻力, 7次触支撑)",
-          "statusZh": "区间内 (11次触阻力, 7次触支撑)",
-          "resistance": 0.7175,
-          "support": 0.6443,
-          "ageWeeks": null
-        }
-      ],
-      "trade": {
-        "entry": 0.7175,
-        "stop": 0.7197,
-        "target": 0.6257,
-        "riskPct": 0.47,
-        "rr": 26.65
-      }
-    },
-    {
-      "symbol": "GOOGL",
-      "nameEn": "Google",
-      "nameZh": "谷歌",
-      "category": "stocks_etf",
-      "lastPrice": 336.02,
-      "lastDate": "2026-04-13",
-      "score": 3,
-      "finalScore": 27.52,
-      "direction": "bear",
-      "primaryPattern": "头肩顶 H&S Top",
-      "patterns": [
-        {
-          "type": "H&S Top",
-          "typeZh": "头肩顶",
-          "direction": "bear",
-          "status": "Forming",
-          "statusZh": "右肩形成中",
-          "resistance": null,
-          "support": null,
-          "ageWeeks": 4
-        }
-      ],
-      "trade": {
-        "entry": null,
-        "stop": 339.88,
-        "target": 243.0689,
-        "riskPct": 1.15,
-        "rr": 24.08
+        "entry": 104.0742,
+        "stop": 103.9297,
+        "target": 103.543,
+        "riskPct": 0.16,
+        "rr": 3.68
       }
     }
   ]

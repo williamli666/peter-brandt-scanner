@@ -109,19 +109,28 @@ def load_ranked() -> dict[str, dict]:
 RANKED_BY_SYMBOL: dict[str, dict] = {}
 
 
-def get_trade_info(symbol: str) -> dict:
-    """Extract trade info from pattern_ranked.json entry."""
+def get_trade_info(symbol: str, all_patterns: list[dict]) -> dict:
+    """Extract trade info and compute a realistic R:R.
+
+    For H&S / Inv H&S: entry = neckline (pattern break level).
+    For other patterns: fall back to resistance/support breakout level.
+    Last price is NEVER used as entry — stale prices create fake huge R:R.
+    """
     entry = RANKED_BY_SYMBOL.get(symbol)
     if not entry:
         return {}
-    # Compute R:R from stop/target/current-price
     last_price = entry.get("last_price")
     stop = entry.get("stop_loss")
     target = entry.get("primary_target")
+
+    # Pick the entry level from the primary pattern
+    primary_cn = entry.get("primary_pattern", "")
+    entry_price = _pick_entry_price(symbol, primary_cn, all_patterns)
+
     rr = None
-    if last_price and stop and target:
-        risk = abs(last_price - stop)
-        reward = abs(target - last_price)
+    if entry_price and stop and target:
+        risk = abs(entry_price - stop)
+        reward = abs(target - entry_price)
         if risk > 0:
             rr = round(reward / risk, 2)
     return {
@@ -129,12 +138,33 @@ def get_trade_info(symbol: str) -> dict:
         "finalScore": entry.get("final_score"),
         "lastPrice": last_price,
         "direction": DIRECTION_MAP.get(entry.get("net_direction", ""), "neutral"),
+        "entry": entry_price,
         "stop": stop,
         "target": target,
         "riskPct": entry.get("risk_pct"),
         "rr": rr,
         "primaryPattern": entry.get("primary_pattern"),
     }
+
+
+def _pick_entry_price(symbol: str, primary_pattern_cn: str, all_patterns: list[dict]):
+    """Return the breakout level used as the trade entry."""
+    sym_pats = [p for p in all_patterns if p["symbol"] == symbol]
+    # Match by primary pattern name (e.g. "头肩顶 H&S Top")
+    primary = next((p for p in sym_pats if p.get("pattern") == primary_pattern_cn), None)
+    if not primary:
+        return None
+    # H&S / Inv H&S: neckline
+    if primary.get("neckline") is not None:
+        return primary["neckline"]
+    # Rectangle: resistance (bull break) or support (bear break)
+    if primary.get("resistance") is not None and "矩形" in primary.get("pattern", ""):
+        direction = primary.get("direction", "")
+        if "涨" in direction:
+            return primary["resistance"]
+        if "跌" in direction:
+            return primary.get("support")
+    return None
 
 
 def fetch_weekly_closes(symbol: str, weeks: int = WEEKS) -> list[float]:
@@ -163,7 +193,7 @@ def build_candidate(symbol: str, all_patterns: list[dict]) -> dict:
             "ageWeeks": p.get("age_weeks"),
         })
 
-    trade = get_trade_info(symbol)
+    trade = get_trade_info(symbol, all_patterns)
 
     return {
         "symbol": symbol,
@@ -178,7 +208,7 @@ def build_candidate(symbol: str, all_patterns: list[dict]) -> dict:
         "primaryPattern": trade.get("primaryPattern"),
         "patterns": patterns_out,
         "trade": {
-            "entry": _pick_entry(patterns_out),
+            "entry": trade.get("entry"),
             "stop": trade.get("stop"),
             "target": trade.get("target"),
             "riskPct": trade.get("riskPct"),
