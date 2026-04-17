@@ -74,6 +74,7 @@
     .role-rs { color: #7ee7b0; }
     .role-neckline { color: #a0a0ff; }
     .role-target { color: #7ee7b0; }
+    .role-stop { color: #ff8c8c; }
 
     .pattern-list {
       list-style: none;
@@ -135,6 +136,7 @@
         <span class="legend-item role-rs"><span class="legend-dot"></span>右肩 Right Shoulder</span>
         <span class="legend-item role-neckline"><span class="legend-line"></span>颈线 Neckline</span>
         <span class="legend-item role-target"><span class="legend-line"></span>目标 Target</span>
+        <span class="legend-item role-stop"><span class="legend-line"></span>止损 Stop</span>
       </div>
       <ul class="pattern-list" id="patterns"></ul>
     </section>
@@ -342,6 +344,24 @@
           }, `Target ${target}`));
         }
 
+        // Stop-loss line (horizontal)
+        if (stop) {
+          const yS = yScale(stop);
+          chart.appendChild(create("line", {
+            x1: xScale(hs.right_shoulder), x2: W - PAD.right,
+            y1: yS, y2: yS,
+            stroke: "#ff8c8c",
+            "stroke-width": 2,
+            "stroke-dasharray": "6 4",
+            class: "stop-anim", opacity: 0,
+          }));
+          chart.appendChild(create("text", {
+            x: W - PAD.right - 6, y: yS - 6, "text-anchor": "end",
+            fill: "#ff8c8c", "font-size": "11px", "font-family": "monospace",
+            class: "stop-label", opacity: 0,
+          }, `Stop ${stop}`));
+        }
+
         // Anchor markers (big dots with labels)
         anchors.forEach((a, i) => {
           const x = xScale(a.idx);
@@ -369,10 +389,11 @@
       const dots = document.querySelectorAll(".anchor-dot");
       const labels = document.querySelectorAll(".anchor-label");
       const shape = document.querySelector(".pattern-shape");
-      const neckline = document.querySelector(".neckline-anim");
-      const necklineLabel = document.querySelector(".neckline-label");
-      const targetLine = document.querySelector(".target-anim");
-      const targetLabel = document.querySelector(".target-label");
+      const fadeIn = (el) => {
+        if (!el) return;
+        el.style.transition = "opacity 500ms ease";
+        el.setAttribute("opacity", "1");
+      };
 
       let step = 0;
       function next() {
@@ -394,13 +415,18 @@
           step++;
           setTimeout(next, 650);
         } else if (step === anchors.length + 1) {
-          if (neckline) { neckline.style.transition = "opacity 500ms ease"; neckline.setAttribute("opacity", "1"); }
-          if (necklineLabel) { necklineLabel.style.transition = "opacity 500ms ease"; necklineLabel.setAttribute("opacity", "1"); }
+          fadeIn(document.querySelector(".neckline-anim"));
+          fadeIn(document.querySelector(".neckline-label"));
           step++;
           setTimeout(next, 550);
         } else if (step === anchors.length + 2) {
-          if (targetLine) { targetLine.style.transition = "opacity 500ms ease"; targetLine.setAttribute("opacity", "1"); }
-          if (targetLabel) { targetLabel.style.transition = "opacity 500ms ease"; targetLabel.setAttribute("opacity", "1"); }
+          fadeIn(document.querySelector(".target-anim"));
+          fadeIn(document.querySelector(".target-label"));
+          step++;
+          setTimeout(next, 550);
+        } else if (step === anchors.length + 3) {
+          fadeIn(document.querySelector(".stop-anim"));
+          fadeIn(document.querySelector(".stop-label"));
         }
       }
       setTimeout(next, 500);
