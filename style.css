@@ -176,22 +176,11 @@ body.modal-open {
   gap: 14px;
 }
 
-.scan-section-title {
-  margin: 22px 0 4px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: 0.02em;
-}
-
-.scan-section-title:first-of-type {
-  margin-top: 6px;
-}
-
-.scan-section-hint {
-  margin: 0 0 8px;
-  color: var(--muted);
-  font-size: 12px;
+.universe-groups {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .scan-header {
@@ -430,12 +419,6 @@ body.modal-open {
   margin: 0;
   font-size: 12px;
   color: var(--muted);
-}
-
-.universe-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
 }
 
 .universe-group {
