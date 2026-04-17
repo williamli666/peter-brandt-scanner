@@ -36,6 +36,10 @@ cp "$ROOT/data/scan_latest.json" "$ARCHIVE_FILE" && log "  → $ARCHIVE_FILE"
 log "Step 4: building debug JSONs (101 symbols)"
 python3 build_pattern_debug.py --all >> "$LOG" 2>&1 || { log "FAIL: build_pattern_debug"; exit 1; }
 
+# 4b. Run backtest over all archived scans
+log "Step 4b: running backtest on archived scans"
+python3 build_backtest.py >> "$LOG" 2>&1 || log "  (backtest failed, continuing)"
+
 # 5. Commit archive + refreshed data to git
 log "Step 5: committing weekly snapshot to git"
 cd "$ROOT"
@@ -59,5 +63,12 @@ sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
 sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
   "$ROOT/data/"debug-*.json "$VPS_USER@$VPS_HOST:/var/www/charts/data/" \
   >> "$LOG" 2>&1
+
+# Deploy backtest summary if present
+if [ -f "$ROOT/data/backtest_summary.json" ]; then
+  sshpass -p "$VPS_PASS" scp -o StrictHostKeyChecking=no -q \
+    "$ROOT/data/backtest_summary.json" "$VPS_USER@$VPS_HOST:/var/www/charts/data/" \
+    >> "$LOG" 2>&1
+fi
 
 log "=== Weekly update complete ==="

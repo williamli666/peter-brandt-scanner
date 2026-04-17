@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-04-17T04:05:30",
+  "scansProcessed": 1,
+  "candidatesTotal": 8,
+  "outcomes": {
+    "target_hit": 1,
+    "pending": 7
+  },
+  "hitRate": 1.0,
+  "results": [
+    {
+      "symbol": "XLV",
+      "outcome": "target_hit",
+      "weeks": 1,
+      "date": "2026-04-16",
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 51.43
+    },
+    {
+      "symbol": "ZB=F",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 49.89
+    },
+    {
+      "symbol": "ZN=F",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 49.1
+    },
+    {
+      "symbol": "ZW=F",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bull",
+      "primaryPattern": "头肩底 Inv H&S",
+      "finalScore": 48.43
+    },
+    {
+      "symbol": "EURCHF=X",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 46.23
+    },
+    {
+      "symbol": "XLF",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 45.51
+    },
+    {
+      "symbol": "ZF=F",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 43.32
+    },
+    {
+      "symbol": "ZT=F",
+      "outcome": "pending",
+      "weeks": 1,
+      "scanDate": "2026-04-17",
+      "direction": "bear",
+      "primaryPattern": "头肩顶 H&S Top",
+      "finalScore": 42.84
+    }
+  ]
+}

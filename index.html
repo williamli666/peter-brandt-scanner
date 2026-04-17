@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart Pattern Loaders — Peter Brandt</title>
-    <link rel="stylesheet" href="./style.css?v=12" />
+    <link rel="stylesheet" href="./style.css?v=13" />
   </head>
   <body>
     <main class="page">
@@ -38,6 +38,7 @@
         <nav class="view-tabs" role="tablist">
           <button id="tab-gallery" class="view-tab is-active" type="button" role="tab" data-view="gallery">Gallery</button>
           <button id="tab-scan" class="view-tab" type="button" role="tab" data-view="scan">Live Scan</button>
+          <button id="tab-backtest" class="view-tab" type="button" role="tab" data-view="backtest">Backtest</button>
         </nav>
       </section>
 
@@ -57,6 +58,21 @@
         <section id="scan-grid" class="scan-grid" aria-label="Weekly scan candidates"></section>
         <p id="scan-empty" class="scan-empty" hidden>Loading weekly scan data…</p>
         <div id="universe-groups" class="universe-groups"></div>
+      </section>
+
+      <section class="showcase backtest-view" id="view-backtest" hidden>
+        <div class="scan-header">
+          <div class="scan-summary" id="backtest-summary">
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-bt-label="scans">Scans</span><span class="scan-summary-value" id="bt-scans">—</span></div>
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-bt-label="total">Candidates</span><span class="scan-summary-value" id="bt-total">—</span></div>
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-bt-label="hit">Target Hit</span><span class="scan-summary-value scan-bull" id="bt-hit">—</span></div>
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-bt-label="stop">Stopped</span><span class="scan-summary-value scan-bear" id="bt-stop">—</span></div>
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-bt-label="pending">Pending</span><span class="scan-summary-value" id="bt-pending">—</span></div>
+            <div class="scan-summary-cell scan-summary-meta"><span class="scan-summary-label" data-bt-label="hitrate">Hit Rate</span><span class="scan-summary-value" id="bt-hitrate">—</span></div>
+          </div>
+        </div>
+        <div class="backtest-results" id="backtest-results"></div>
+        <p id="backtest-empty" class="scan-empty" hidden></p>
       </section>
 
     </main>
@@ -116,6 +132,6 @@
       </section>
     </div>
 
-    <script src="./main.js?v=12"></script>
+    <script src="./main.js?v=13"></script>
   </body>
 </html>

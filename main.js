@@ -1081,6 +1081,27 @@ const SCAN_UI = {
     universeTitle: "Symbol Universe",
     universeHint: "Click any symbol to inspect its weekly chart and detected pattern structure.",
     patternsLabel: "patterns",
+    backtest: "Backtest",
+    scans: "Scans",
+    totalLabel: "Candidates",
+    hit: "Target Hit",
+    stopLabel: "Stopped",
+    pending: "Pending",
+    hitrate: "Hit Rate",
+    btColScan: "Scan",
+    btColSymbol: "Symbol",
+    btColPattern: "Pattern",
+    btColDir: "Dir",
+    btColOutcome: "Outcome",
+    btColWeeks: "Wks",
+    btColScore: "Score",
+    btEmpty: "No backtest data yet — will populate after weekly runs.",
+    outTargetHit: "Target",
+    outStopHit: "Stopped",
+    outPending: "Pending",
+    outExpired: "Expired",
+    outNoData: "No Data",
+    outNoLevels: "No Lvl",
   },
   zh: {
     gallery: "形态图鉴",
@@ -1103,6 +1124,27 @@ const SCAN_UI = {
     universeTitle: "品种全景",
     universeHint: "点击任意品种查看周线图与识别出的形态结构。",
     patternsLabel: "个形态",
+    backtest: "回测",
+    scans: "扫描次数",
+    totalLabel: "候选总数",
+    hit: "目标达成",
+    stopLabel: "止损打到",
+    pending: "进行中",
+    hitrate: "胜率",
+    btColScan: "扫描日",
+    btColSymbol: "品种",
+    btColPattern: "形态",
+    btColDir: "方向",
+    btColOutcome: "结果",
+    btColWeeks: "周数",
+    btColScore: "评分",
+    btEmpty: "尚无回测数据，每周五自动累积。",
+    outTargetHit: "达标",
+    outStopHit: "止损",
+    outPending: "进行中",
+    outExpired: "过期",
+    outNoData: "无数据",
+    outNoLevels: "无止盈止损",
   },
 };
 
@@ -1119,11 +1161,15 @@ const PATTERN_ZH_MAP = {
 
 const tabGallery = document.querySelector("#tab-gallery");
 const tabScan = document.querySelector("#tab-scan");
+const tabBacktest = document.querySelector("#tab-backtest");
 const viewGallery = document.querySelector("#view-gallery");
 const viewScan = document.querySelector("#view-scan");
+const viewBacktest = document.querySelector("#view-backtest");
 const scanGrid = document.querySelector("#scan-grid");
 const scanEmpty = document.querySelector("#scan-empty");
 const universeGroupsEl = document.querySelector("#universe-groups");
+const backtestResultsEl = document.querySelector("#backtest-results");
+const backtestEmptyEl = document.querySelector("#backtest-empty");
 
 let scanData = null;
 let scanLoading = false;
@@ -1274,6 +1320,114 @@ const PATTERN_ZH_MAP_REV = Object.fromEntries(
   }).map(([en, zh]) => [zh, en])
 );
 
+let backtestData = null;
+let backtestLoading = false;
+
+async function loadBacktestData() {
+  if (backtestData || backtestLoading) return;
+  backtestLoading = true;
+  try {
+    const resp = await fetch("./data/backtest_summary.json", { cache: "no-cache" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    backtestData = await resp.json();
+    renderBacktestView();
+  } catch (err) {
+    backtestEmptyEl.hidden = false;
+    backtestEmptyEl.textContent = `${SCAN_UI[currentLanguage].errorLoad || "Load failed"} (${err.message})`;
+  } finally {
+    backtestLoading = false;
+  }
+}
+
+const OUTCOME_LABEL_KEY = {
+  target_hit: "outTargetHit",
+  stop_hit: "outStopHit",
+  pending: "outPending",
+  expired: "outExpired",
+  no_data: "outNoData",
+  no_levels: "outNoLevels",
+};
+
+function renderBacktestView() {
+  if (!backtestData) return;
+  const ui = SCAN_UI[currentLanguage];
+  const outcomes = backtestData.outcomes || {};
+  document.querySelector("#bt-scans").textContent = backtestData.scansProcessed || 0;
+  document.querySelector("#bt-total").textContent = backtestData.candidatesTotal || 0;
+  document.querySelector("#bt-hit").textContent = outcomes.target_hit || 0;
+  document.querySelector("#bt-stop").textContent = outcomes.stop_hit || 0;
+  document.querySelector("#bt-pending").textContent = outcomes.pending || 0;
+  document.querySelector("#bt-hitrate").textContent = backtestData.hitRate != null
+    ? `${(backtestData.hitRate * 100).toFixed(0)}%`
+    : "—";
+
+  document.querySelectorAll("[data-bt-label]").forEach((el) => {
+    const key = el.dataset.btLabel;
+    const map = {
+      scans: ui.scans, total: ui.totalLabel, hit: ui.hit,
+      stop: ui.stopLabel, pending: ui.pending, hitrate: ui.hitrate,
+    };
+    if (map[key]) el.textContent = map[key];
+  });
+
+  // Results table
+  const results = backtestData.results || [];
+  if (results.length === 0) {
+    backtestEmptyEl.hidden = false;
+    backtestEmptyEl.textContent = ui.btEmpty;
+    backtestResultsEl.innerHTML = "";
+    return;
+  }
+  backtestEmptyEl.hidden = true;
+
+  // Header row
+  const header = `
+    <div class="backtest-row backtest-row-header">
+      <span class="bt-date">${escapeHtml(ui.btColScan)}</span>
+      <span class="bt-sym">${escapeHtml(ui.btColSymbol)}</span>
+      <span class="bt-pattern">${escapeHtml(ui.btColPattern)}</span>
+      <span class="bt-dir">${escapeHtml(ui.btColDir)}</span>
+      <span class="bt-outcome">${escapeHtml(ui.btColOutcome)}</span>
+      <span class="bt-weeks">${escapeHtml(ui.btColWeeks)}</span>
+      <span class="bt-score">${escapeHtml(ui.btColScore)}</span>
+    </div>
+  `;
+  // Sort by scanDate desc, then target_hit → stop_hit → pending
+  const outcomeRank = { target_hit: 0, stop_hit: 1, pending: 2, expired: 3, no_data: 4, no_levels: 5 };
+  const sorted = [...results].sort((a, b) => {
+    const d = b.scanDate.localeCompare(a.scanDate);
+    if (d !== 0) return d;
+    return (outcomeRank[a.outcome] ?? 9) - (outcomeRank[b.outcome] ?? 9);
+  });
+
+  const rows = sorted.map((r) => {
+    const outcomeLabel = ui[OUTCOME_LABEL_KEY[r.outcome]] || r.outcome;
+    const patternName = currentLanguage === "zh"
+      ? (PATTERN_ZH_MAP[r.primaryPattern?.split(" ")[1]] || r.primaryPattern || "—")
+      : (r.primaryPattern || "—");
+    const weeks = r.weeks != null ? r.weeks : "—";
+    const score = r.finalScore != null ? r.finalScore.toFixed(1) : "—";
+    const dirLabel = r.direction === "bull"
+      ? (currentLanguage === "zh" ? "涨" : "Bull")
+      : r.direction === "bear"
+      ? (currentLanguage === "zh" ? "跌" : "Bear")
+      : "—";
+    return `
+      <a class="backtest-row" href="./debug.html?symbol=${encodeURIComponent(r.symbol)}">
+        <span class="bt-date">${escapeHtml(r.scanDate)}</span>
+        <span class="bt-sym">${escapeHtml(r.symbol)}</span>
+        <span class="bt-pattern" title="${escapeHtml(r.primaryPattern || "")}">${escapeHtml(patternName)}</span>
+        <span class="bt-dir ${r.direction}">${escapeHtml(dirLabel)}</span>
+        <span class="bt-outcome ${r.outcome}">${escapeHtml(outcomeLabel)}</span>
+        <span class="bt-weeks">${escapeHtml(String(weeks))}</span>
+        <span class="bt-score">${escapeHtml(score)}</span>
+      </a>
+    `;
+  }).join("");
+
+  backtestResultsEl.innerHTML = header + rows;
+}
+
 function renderUniverseInScan() {
   if (!scanData || !scanData.universe || !universeGroupsEl) return;
   universeGroupsEl.innerHTML = "";
@@ -1356,13 +1510,17 @@ async function loadScanData() {
 function switchView(view) {
   tabGallery.classList.toggle("is-active", view === "gallery");
   tabScan.classList.toggle("is-active", view === "scan");
+  tabBacktest.classList.toggle("is-active", view === "backtest");
   viewGallery.hidden = view !== "gallery";
   viewScan.hidden = view !== "scan";
+  viewBacktest.hidden = view !== "backtest";
   if (view === "scan") loadScanData();
+  if (view === "backtest") loadBacktestData();
 }
 
 tabGallery.addEventListener("click", () => switchView("gallery"));
 tabScan.addEventListener("click", () => switchView("scan"));
+tabBacktest.addEventListener("click", () => switchView("backtest"));
 
 // Re-render scan view when language changes (if already loaded)
 const originalApplyLanguage = applyLanguage;
@@ -1370,7 +1528,9 @@ function applyLanguageWithScan() {
   originalApplyLanguage();
   tabGallery.textContent = SCAN_UI[currentLanguage].gallery;
   tabScan.textContent = SCAN_UI[currentLanguage].scan;
+  tabBacktest.textContent = SCAN_UI[currentLanguage].backtest;
   if (scanData) renderScanView();
+  if (backtestData) renderBacktestView();
 }
 applyLanguageWithScan();
 langEnButton.removeEventListener && langEnButton.removeEventListener("click", () => {});
