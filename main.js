@@ -1077,6 +1077,7 @@ const SCAN_UI = {
     rr: "R:R",
     risk: "Risk",
     lastPrice: "Last",
+    candidates: "Recommended Signals",
     universeTitle: "Symbol Universe",
     universeHint: "Click any symbol to inspect its weekly chart and detected pattern structure.",
     patternsLabel: "patterns",
@@ -1098,6 +1099,7 @@ const SCAN_UI = {
     rr: "盈亏比",
     risk: "风险",
     lastPrice: "现价",
+    candidates: "推荐信号",
     universeTitle: "品种全景",
     universeHint: "点击任意品种查看周线图与识别出的形态结构。",
     patternsLabel: "个形态",
@@ -1121,6 +1123,7 @@ const viewGallery = document.querySelector("#view-gallery");
 const viewScan = document.querySelector("#view-scan");
 const scanGrid = document.querySelector("#scan-grid");
 const scanEmpty = document.querySelector("#scan-empty");
+const universeGroupsEl = document.querySelector("#universe-groups");
 
 let scanData = null;
 let scanLoading = false;
@@ -1259,6 +1262,40 @@ const PATTERN_ZH_MAP_REV = Object.fromEntries(
   }).map(([en, zh]) => [zh, en])
 );
 
+function renderUniverseInScan() {
+  if (!scanData || !scanData.universe || !universeGroupsEl) return;
+  universeGroupsEl.innerHTML = "";
+  scanData.universe.forEach((group) => {
+    const section = document.createElement("section");
+    section.className = "universe-group";
+    const label = currentLanguage === "zh" ? group.labelZh : group.labelEn;
+    const cells = group.symbols.map((s) => {
+      const name = currentLanguage === "zh" ? s.nameZh : s.nameEn;
+      const closes = s.weeklyCloses || [];
+      const chart = closes.length > 1
+        ? renderSparkline(closes, "neutral")
+        : `<div class="universe-cell-chart-empty">—</div>`;
+      return `
+        <a class="universe-cell" href="./debug.html?symbol=${encodeURIComponent(s.symbol)}" data-symbol="${escapeHtml(s.symbol)}">
+          <div class="universe-cell-top">
+            <span class="universe-cell-symbol">${escapeHtml(s.symbol)}</span>
+          </div>
+          <div class="universe-cell-chart">${chart}</div>
+          <span class="universe-cell-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+        </a>
+      `;
+    }).join("");
+    section.innerHTML = `
+      <div class="universe-group-head">
+        <h3 class="universe-group-title">${escapeHtml(label)}</h3>
+        <span class="universe-group-count">${group.count}</span>
+      </div>
+      <div class="universe-grid">${cells}</div>
+    `;
+    universeGroupsEl.appendChild(section);
+  });
+}
+
 function renderScanView() {
   if (!scanData) return;
   const ui = SCAN_UI[currentLanguage];
@@ -1275,9 +1312,15 @@ function renderScanView() {
     const key = el.dataset.sumLabel;
     if (ui[key]) el.textContent = ui[key];
   });
+  document.querySelectorAll("[data-scan-label]").forEach((el) => {
+    const key = el.dataset.scanLabel;
+    if (ui[key]) el.textContent = ui[key];
+  });
 
   scanGrid.innerHTML = "";
   scanData.candidates.forEach((c, i) => scanGrid.appendChild(renderScanCard(c, i)));
+
+  renderUniverseInScan();
 }
 
 async function loadScanData() {

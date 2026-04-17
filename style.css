@@ -176,6 +176,24 @@ body.modal-open {
   gap: 14px;
 }
 
+.scan-section-title {
+  margin: 22px 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.scan-section-title:first-of-type {
+  margin-top: 6px;
+}
+
+.scan-section-hint {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .scan-header {
   display: flex;
   justify-content: flex-start;

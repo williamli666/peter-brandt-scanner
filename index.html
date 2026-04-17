@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart Pattern Loaders — Peter Brandt</title>
-    <link rel="stylesheet" href="./style.css?v=9" />
+    <link rel="stylesheet" href="./style.css?v=10" />
   </head>
   <body>
     <main class="page">
@@ -54,8 +54,13 @@
             <div class="scan-summary-cell scan-summary-meta"><span class="scan-summary-label" data-sum-label="asof">As of</span><span class="scan-summary-value" id="scan-asof">—</span></div>
           </div>
         </div>
+        <h2 class="scan-section-title" id="scan-candidates-title" data-scan-label="candidates">Recommended Signals</h2>
         <section id="scan-grid" class="scan-grid" aria-label="Weekly scan candidates"></section>
         <p id="scan-empty" class="scan-empty" hidden>Loading weekly scan data…</p>
+
+        <h2 class="scan-section-title" id="universe-section-title" data-scan-label="universeTitle">Symbol Universe</h2>
+        <p class="scan-section-hint" id="universe-section-hint" data-scan-label="universeHint">Click any symbol to inspect its weekly chart.</p>
+        <div id="universe-groups" class="universe-groups"></div>
       </section>
 
     </main>
@@ -115,6 +120,6 @@
       </section>
     </div>
 
-    <script src="./main.js?v=9"></script>
+    <script src="./main.js?v=10"></script>
   </body>
 </html>

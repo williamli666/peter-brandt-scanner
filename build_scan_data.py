@@ -301,6 +301,9 @@ def main():
         totals[DIRECTION_MAP.get(p["direction"], "neutral")] += 1
         unique_symbols.add(p["symbol"])
 
+    # Fetch weekly closes for the whole universe (parallel, ~2 min)
+    closes_map = fetch_universe_closes(list(SYMBOL_META.keys()))
+
     top_symbols = pick_top_symbols(TOP_N_CANDIDATES)
     raw_candidates = [build_candidate(sym, all_patterns) for sym in top_symbols]
 
@@ -324,10 +327,14 @@ def main():
         flush=True,
     )
 
+    universe_groups = build_universe(all_patterns, closes_map)
+    universe_total = sum(g["count"] for g in universe_groups)
+
     payload = {
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "dataAsOf": candidates[0]["lastDate"] if candidates else None,
         "summary": {
+            "symbolsTotal": universe_total,
             "symbolsWithSignal": len(unique_symbols),
             "signalsFound": len(all_patterns),
             "bullish": totals["bull"],
@@ -335,6 +342,7 @@ def main():
             "neutral": totals["neutral"],
         },
         "candidates": candidates,
+        "universe": universe_groups,
     }
 
     OUTPUT_JSON.write_text(
@@ -343,6 +351,7 @@ def main():
     )
     print(f"\nWrote {OUTPUT_JSON} ({OUTPUT_JSON.stat().st_size} bytes)")
     print(f"Actionable candidates: {len(candidates)}")
+    print(f"Universe: {universe_total} symbols with sparkline data")
 
 
 if __name__ == "__main__":
