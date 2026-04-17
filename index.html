@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart Pattern Loaders — Peter Brandt</title>
-    <link rel="stylesheet" href="./style.css?v=13" />
+    <link rel="stylesheet" href="./style.css?v=14" />
   </head>
   <body>
     <main class="page">
@@ -38,6 +38,7 @@
         <nav class="view-tabs" role="tablist">
           <button id="tab-gallery" class="view-tab is-active" type="button" role="tab" data-view="gallery">Gallery</button>
           <button id="tab-scan" class="view-tab" type="button" role="tab" data-view="scan">Live Scan</button>
+          <button id="tab-daily" class="view-tab" type="button" role="tab" data-view="daily">Daily</button>
           <button id="tab-backtest" class="view-tab" type="button" role="tab" data-view="backtest">Backtest</button>
         </nav>
       </section>
@@ -58,6 +59,18 @@
         <section id="scan-grid" class="scan-grid" aria-label="Weekly scan candidates"></section>
         <p id="scan-empty" class="scan-empty" hidden>Loading weekly scan data…</p>
         <div id="universe-groups" class="universe-groups"></div>
+      </section>
+
+      <section class="showcase daily-view" id="view-daily" hidden>
+        <div class="daily-header">
+          <div class="daily-meta">
+            <span class="daily-meta-label" data-daily-label="title">Daily Gary Norden Analysis</span>
+            <span class="daily-meta-count" id="daily-count">—</span>
+          </div>
+          <p class="daily-hint" data-daily-label="hint">Each report analyzes the prior US trading session through Gary Norden's framework (yields, correlation, sector rotation, geopolitical risk).</p>
+        </div>
+        <div class="daily-list" id="daily-list"></div>
+        <p id="daily-empty" class="scan-empty" hidden></p>
       </section>
 
       <section class="showcase backtest-view" id="view-backtest" hidden>
@@ -132,6 +145,6 @@
       </section>
     </div>
 
-    <script src="./main.js?v=13"></script>
+    <script src="./main.js?v=14"></script>
   </body>
 </html>

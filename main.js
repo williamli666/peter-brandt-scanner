@@ -1102,6 +1102,10 @@ const SCAN_UI = {
     outExpired: "Expired",
     outNoData: "No Data",
     outNoLevels: "No Lvl",
+    daily: "Daily",
+    dailyTitle: "Daily Gary Norden Analysis",
+    dailyHint: "Each report analyzes the prior US trading session through Gary Norden's framework (yields, correlation, sector rotation, geopolitical risk).",
+    dailyEmpty: "No daily reports generated yet.",
   },
   zh: {
     gallery: "形态图鉴",
@@ -1145,6 +1149,10 @@ const SCAN_UI = {
     outExpired: "过期",
     outNoData: "无数据",
     outNoLevels: "无止盈止损",
+    daily: "每日分析",
+    dailyTitle: "每日 Gary Norden 视角分析",
+    dailyHint: "每份报告基于 Gary Norden 框架（收益率/相关性/板块轮动/地缘风险）分析上一个美股交易日。",
+    dailyEmpty: "尚无每日报告。",
   },
 };
 
@@ -1161,15 +1169,20 @@ const PATTERN_ZH_MAP = {
 
 const tabGallery = document.querySelector("#tab-gallery");
 const tabScan = document.querySelector("#tab-scan");
+const tabDaily = document.querySelector("#tab-daily");
 const tabBacktest = document.querySelector("#tab-backtest");
 const viewGallery = document.querySelector("#view-gallery");
 const viewScan = document.querySelector("#view-scan");
+const viewDaily = document.querySelector("#view-daily");
 const viewBacktest = document.querySelector("#view-backtest");
 const scanGrid = document.querySelector("#scan-grid");
 const scanEmpty = document.querySelector("#scan-empty");
 const universeGroupsEl = document.querySelector("#universe-groups");
 const backtestResultsEl = document.querySelector("#backtest-results");
 const backtestEmptyEl = document.querySelector("#backtest-empty");
+const dailyListEl = document.querySelector("#daily-list");
+const dailyCountEl = document.querySelector("#daily-count");
+const dailyEmptyEl = document.querySelector("#daily-empty");
 
 let scanData = null;
 let scanLoading = false;
@@ -1320,8 +1333,57 @@ const PATTERN_ZH_MAP_REV = Object.fromEntries(
   }).map(([en, zh]) => [zh, en])
 );
 
+let dailyData = null;
+let dailyLoading = false;
 let backtestData = null;
 let backtestLoading = false;
+
+async function loadDailyData() {
+  if (dailyData || dailyLoading) return;
+  dailyLoading = true;
+  try {
+    const resp = await fetch("./data/daily_index.json", { cache: "no-cache" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    dailyData = await resp.json();
+    renderDailyView();
+  } catch (err) {
+    dailyEmptyEl.hidden = false;
+    dailyEmptyEl.textContent = `${SCAN_UI[currentLanguage].errorLoad || "Load failed"} (${err.message})`;
+  } finally {
+    dailyLoading = false;
+  }
+}
+
+function renderDailyView() {
+  if (!dailyData) return;
+  const ui = SCAN_UI[currentLanguage];
+  dailyCountEl.textContent = dailyData.count ?? 0;
+
+  document.querySelectorAll("[data-daily-label]").forEach((el) => {
+    const key = el.dataset.dailyLabel;
+    if (key === "title") el.textContent = ui.dailyTitle;
+    if (key === "hint") el.textContent = ui.dailyHint;
+  });
+
+  const entries = dailyData.entries || [];
+  if (entries.length === 0) {
+    dailyEmptyEl.hidden = false;
+    dailyEmptyEl.textContent = ui.dailyEmpty;
+    dailyListEl.innerHTML = "";
+    return;
+  }
+  dailyEmptyEl.hidden = true;
+  dailyListEl.innerHTML = entries.map((e) => `
+    <a class="daily-entry" href="./data/${encodeURI(e.file)}" target="_blank" rel="noopener">
+      <div class="daily-entry-head">
+        <span class="daily-entry-date">${escapeHtml(e.date)}</span>
+        <span class="daily-entry-title">${escapeHtml(e.title)}</span>
+      </div>
+      <p class="daily-entry-preview">${escapeHtml(e.preview || "")}</p>
+    </a>
+  `).join("");
+}
+
 
 async function loadBacktestData() {
   if (backtestData || backtestLoading) return;
@@ -1510,16 +1572,20 @@ async function loadScanData() {
 function switchView(view) {
   tabGallery.classList.toggle("is-active", view === "gallery");
   tabScan.classList.toggle("is-active", view === "scan");
+  tabDaily.classList.toggle("is-active", view === "daily");
   tabBacktest.classList.toggle("is-active", view === "backtest");
   viewGallery.hidden = view !== "gallery";
   viewScan.hidden = view !== "scan";
+  viewDaily.hidden = view !== "daily";
   viewBacktest.hidden = view !== "backtest";
   if (view === "scan") loadScanData();
+  if (view === "daily") loadDailyData();
   if (view === "backtest") loadBacktestData();
 }
 
 tabGallery.addEventListener("click", () => switchView("gallery"));
 tabScan.addEventListener("click", () => switchView("scan"));
+tabDaily.addEventListener("click", () => switchView("daily"));
 tabBacktest.addEventListener("click", () => switchView("backtest"));
 
 // Re-render scan view when language changes (if already loaded)
@@ -1528,8 +1594,10 @@ function applyLanguageWithScan() {
   originalApplyLanguage();
   tabGallery.textContent = SCAN_UI[currentLanguage].gallery;
   tabScan.textContent = SCAN_UI[currentLanguage].scan;
+  tabDaily.textContent = SCAN_UI[currentLanguage].daily;
   tabBacktest.textContent = SCAN_UI[currentLanguage].backtest;
   if (scanData) renderScanView();
+  if (dailyData) renderDailyView();
   if (backtestData) renderBacktestView();
 }
 applyLanguageWithScan();
