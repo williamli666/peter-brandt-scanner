@@ -2,40 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Label</key>
-    <string>com.peter-brandt.weekly</string>
-
+    <key>Label</key><string>com.peter-brandt.weekly</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>-lc</string>
-        <string>$HOME/Documents/claudcode/math-curve-loaders/update_weekly.sh</string>
+        <string>$HOME/Documents/claudcode/math-curve-loaders/trigger_update.sh scan &amp;&amp; $HOME/Documents/claudcode/math-curve-loaders/trigger_update.sh backtest</string>
     </array>
-
-    <!-- Friday 17:00 local time; StartCalendarInterval runs when the Mac is on. -->
+    <!-- Friday 17:00 local: scan runs, then backtest processes new archive -->
     <key>StartCalendarInterval</key>
-    <dict>
-        <key>Weekday</key>
-        <integer>5</integer>
-        <key>Hour</key>
-        <integer>17</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
-
-    <!-- If the Mac was asleep at the trigger time, run as soon as it wakes up. -->
-    <key>RunAtLoad</key>
-    <false/>
-
-    <key>StandardOutPath</key>
-    <string>/tmp/peter-brandt-weekly.out</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/peter-brandt-weekly.err</string>
-
+    <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer></dict>
+    <key>StandardOutPath</key><string>/tmp/peter-brandt-weekly.out</string>
+    <key>StandardErrorPath</key><string>/tmp/peter-brandt-weekly.err</string>
     <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
-    </dict>
+    <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
 </dict>
 </plist>

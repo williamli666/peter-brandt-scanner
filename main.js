@@ -1114,6 +1114,14 @@ const SCAN_UI = {
     mungerTitle: "Munger 200-Week MA Scan",
     mungerHint: '"Buy high-quality stocks touching the 200-week MA" — Munger. Scans HS300 + US blue chips for MA200 proximity.',
     mungerEmpty: "No Munger scans generated yet.",
+    refresh: "Refresh",
+    refreshing: "Running",
+    refreshStarting: "Starting update",
+    refreshDone: "Updated",
+    refreshTimeout: "Job timed out",
+    refreshFailed: "Update failed",
+    refreshNoTab: "Switch to a data tab first.",
+    refreshNoService: "Local trigger service offline. On Mac, double-click 启动触发服务.command to start it.",
   },
   zh: {
     gallery: "形态图鉴",
@@ -1169,6 +1177,14 @@ const SCAN_UI = {
     mungerTitle: "芒格200周均线扫描",
     mungerHint: "芒格名言：触及200周均线的优质股是最好的买入时机。扫描沪深300 + 美股蓝筹。",
     mungerEmpty: "尚无芒格扫描报告。",
+    refresh: "手动扫描",
+    refreshing: "扫描中",
+    refreshStarting: "开始更新",
+    refreshDone: "已更新",
+    refreshTimeout: "任务超时",
+    refreshFailed: "更新失败",
+    refreshNoTab: "切到数据 tab 才能扫描。",
+    refreshNoService: "本地触发服务未启动。请在 Mac 上双击 启动触发服务.command。",
   },
 };
 
@@ -1654,6 +1670,110 @@ tabFutures.addEventListener("click", () => switchView("futures"));
 tabMunger.addEventListener("click", () => switchView("munger"));
 tabBacktest.addEventListener("click", () => switchView("backtest"));
 
+// ═════════════════════════════════════════════════════════════
+// Manual refresh button — talks to local trigger_server.py (127.0.0.1:8800)
+// ═════════════════════════════════════════════════════════════
+
+const TRIGGER_BASE = "http://127.0.0.1:8800";
+const refreshBtn = document.querySelector("#refresh-btn");
+const refreshLabel = document.querySelector("#refresh-label");
+const refreshToast = document.querySelector("#refresh-toast");
+
+function activeSrcKey() {
+  if (!viewScan.hidden) return "scan";
+  if (!viewDaily.hidden) return "daily";
+  if (!viewFutures.hidden) return "futures";
+  if (!viewMunger.hidden) return "munger";
+  if (!viewBacktest.hidden) return "backtest";
+  return null;
+}
+
+function showToast(text, kind = "info", ms = 4200) {
+  refreshToast.textContent = text;
+  refreshToast.className = `is-visible is-${kind}`;
+  clearTimeout(showToast._t);
+  if (ms > 0) {
+    showToast._t = setTimeout(() => {
+      refreshToast.classList.remove("is-visible");
+    }, ms);
+  }
+}
+
+async function pollJob(jobId, src) {
+  const ui = SCAN_UI[currentLanguage];
+  const start = Date.now();
+  while (true) {
+    await new Promise((r) => setTimeout(r, 3000));
+    let resp;
+    try {
+      resp = await fetch(`${TRIGGER_BASE}/status?job=${jobId}`);
+    } catch (e) {
+      return { status: "error", error: String(e) };
+    }
+    const job = await resp.json();
+    const elapsed = Math.round((Date.now() - start) / 1000);
+    refreshLabel.textContent = `${ui.refreshing || "Refreshing"} ${elapsed}s`;
+    if (job.status === "running" || job.status === "queued") continue;
+    return job;
+  }
+}
+
+function reloadCurrentTab() {
+  const src = activeSrcKey();
+  if (src === "scan") { scanData = null; loadScanData(); }
+  if (src === "daily") { REPORT_TABS.daily.data = null; loadReport("daily"); }
+  if (src === "futures") { REPORT_TABS.futures.data = null; loadReport("futures"); }
+  if (src === "munger") { REPORT_TABS.munger.data = null; loadReport("munger"); }
+  if (src === "backtest") { backtestData = null; loadBacktestData(); }
+}
+
+async function runRefresh() {
+  const src = activeSrcKey();
+  const ui = SCAN_UI[currentLanguage];
+  if (!src) {
+    showToast(ui.refreshNoTab || "This tab has nothing to refresh.", "info");
+    return;
+  }
+  refreshBtn.disabled = true;
+  refreshBtn.classList.add("is-running");
+  refreshLabel.textContent = ui.refreshing || "Refreshing…";
+  showToast(`${ui.refreshStarting || "Starting update"}: ${src}`, "info", 2000);
+
+  let trigger;
+  try {
+    const resp = await fetch(`${TRIGGER_BASE}/trigger?src=${src}`, { method: "POST" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    trigger = await resp.json();
+  } catch (e) {
+    refreshBtn.disabled = false;
+    refreshBtn.classList.remove("is-running");
+    refreshLabel.textContent = ui.refresh || "Refresh";
+    showToast(
+      ui.refreshNoService || "Local trigger service unreachable. Double-click 启动触发服务.command on Mac.",
+      "error",
+      6000,
+    );
+    return;
+  }
+
+  const job = await pollJob(trigger.jobId, src);
+  refreshBtn.disabled = false;
+  refreshBtn.classList.remove("is-running");
+  refreshLabel.textContent = ui.refresh || "Refresh";
+
+  if (job.status === "done") {
+    showToast(`${ui.refreshDone || "Updated"}: ${src}`, "ok", 4000);
+    setTimeout(reloadCurrentTab, 500);
+  } else if (job.status === "timeout") {
+    showToast(ui.refreshTimeout || "Job timed out (>10 min).", "error", 6000);
+  } else {
+    const tail = (job.stderr || job.error || job.stdout || "").slice(-200);
+    showToast(`${ui.refreshFailed || "Update failed"}: ${tail}`, "error", 8000);
+  }
+}
+
+refreshBtn.addEventListener("click", runRefresh);
+
 // Re-render scan view when language changes (if already loaded)
 const originalApplyLanguage = applyLanguage;
 function applyLanguageWithScan() {
@@ -1664,6 +1784,7 @@ function applyLanguageWithScan() {
   tabFutures.textContent = SCAN_UI[currentLanguage].futures;
   tabMunger.textContent = SCAN_UI[currentLanguage].munger;
   tabBacktest.textContent = SCAN_UI[currentLanguage].backtest;
+  if (refreshLabel) refreshLabel.textContent = SCAN_UI[currentLanguage].refresh;
   if (scanData) renderScanView();
   ["daily", "futures", "munger"].forEach((k) => {
     if (REPORT_TABS[k].data) renderReport(k);

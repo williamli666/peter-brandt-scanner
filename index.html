@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart Pattern Loaders — Peter Brandt</title>
-    <link rel="stylesheet" href="./style.css?v=15" />
+    <link rel="stylesheet" href="./style.css?v=16" />
   </head>
   <body>
     <main class="page">
@@ -14,6 +14,15 @@
             <button id="lang-en" class="lang-button is-active" type="button">EN</button>
             <button id="lang-zh" class="lang-button" type="button">中文</button>
           </div>
+          <button id="refresh-btn" class="repo-link refresh-btn" type="button" title="Run scan for the active tab">
+            <svg class="repo-link-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 0 1-15.38 6.36L3 16"></path>
+              <path d="M3 12a9 9 0 0 1 15.38-6.36L21 8"></path>
+              <polyline points="3 21 3 16 8 16"></polyline>
+              <polyline points="21 3 21 8 16 8"></polyline>
+            </svg>
+            <span id="refresh-label">Refresh</span>
+          </button>
           <a
             class="repo-link"
             href="https://x.com/william69059201"
@@ -115,6 +124,7 @@
       </section>
 
     </main>
+    <div id="refresh-toast" role="status" aria-live="polite"></div>
 
     <div id="viewer-modal" class="viewer-modal" aria-hidden="true">
       <div id="viewer-backdrop" class="viewer-backdrop"></div>
@@ -171,6 +181,6 @@
       </section>
     </div>
 
-    <script src="./main.js?v=15"></script>
+    <script src="./main.js?v=16"></script>
   </body>
 </html>
