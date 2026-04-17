@@ -29,6 +29,11 @@ body.modal-open {
   overflow: hidden;
 }
 
+/* Ensure [hidden] beats any later display rule on views */
+[hidden] {
+  display: none !important;
+}
+
 .page {
   min-height: 100vh;
   padding: 28px 20px 48px;

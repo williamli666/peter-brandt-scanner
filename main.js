@@ -1718,12 +1718,11 @@ async function pollJob(jobId, src) {
   }
 }
 
-function reloadCurrentTab() {
-  const src = activeSrcKey();
+function reloadTabBySrc(src) {
   if (src === "scan") { scanData = null; loadScanData(); }
-  if (src === "daily") { REPORT_TABS.daily.data = null; loadReport("daily"); }
-  if (src === "futures") { REPORT_TABS.futures.data = null; loadReport("futures"); }
-  if (src === "munger") { REPORT_TABS.munger.data = null; loadReport("munger"); }
+  if (src === "daily") { REPORT_TABS.daily.data = null; REPORT_TABS.daily.loading = false; loadReport("daily"); }
+  if (src === "futures") { REPORT_TABS.futures.data = null; REPORT_TABS.futures.loading = false; loadReport("futures"); }
+  if (src === "munger") { REPORT_TABS.munger.data = null; REPORT_TABS.munger.loading = false; loadReport("munger"); }
   if (src === "backtest") { backtestData = null; loadBacktestData(); }
 }
 
@@ -1763,7 +1762,7 @@ async function runRefresh() {
 
   if (job.status === "done") {
     showToast(`${ui.refreshDone || "Updated"}: ${src}`, "ok", 4000);
-    setTimeout(reloadCurrentTab, 500);
+    setTimeout(() => reloadTabBySrc(src), 500);
   } else if (job.status === "timeout") {
     showToast(ui.refreshTimeout || "Job timed out (>10 min).", "error", 6000);
   } else {
