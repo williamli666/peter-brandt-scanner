@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pattern Debug — Scanner Validation</title>
+  <link rel="stylesheet" href="./style.css?v=7" />
+  <style>
+    .debug-wrap {
+      max-width: 1200px;
+      margin: 28px auto;
+      padding: 0 20px 48px;
+    }
+    .debug-title { margin: 0 0 6px; font-size: 28px; font-weight: 600; }
+    .debug-subtitle { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+    .debug-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        var(--panel);
+      border: 1px solid var(--panel-border);
+      margin-bottom: 18px;
+    }
+    .debug-meta-cell { display: flex; flex-direction: column; gap: 4px; min-width: 90px; }
+    .debug-meta-label {
+      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .debug-meta-value { font-size: 16px; font-weight: 600; color: var(--text); }
+    .debug-meta-value.bull { color: #7ee7b0; }
+    .debug-meta-value.bear { color: #ff8c8c; }
+
+    .chart-panel {
+      padding: 20px;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        var(--panel);
+      border: 1px solid var(--panel-border);
+    }
+    .chart-svg {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1000 / 480;
+      display: block;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid currentColor;
+    }
+    .legend-line {
+      width: 22px; height: 0;
+      border-top: 2px dashed currentColor;
+    }
+
+    .role-ls { color: #7ee7b0; }
+    .role-lp { color: #f5d87a; }
+    .role-head { color: #ff8c8c; }
+    .role-rp { color: #f5d87a; }
+    .role-rs { color: #7ee7b0; }
+    .role-neckline { color: #a0a0ff; }
+    .role-target { color: #7ee7b0; }
+
+    .pattern-list {
+      list-style: none;
+      padding: 0; margin: 18px 0 0;
+      display: grid; gap: 10px;
+    }
+    .pattern-list li {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+    }
+    .pattern-list li strong { color: var(--text); margin-right: 8px; }
+
+    .back-link {
+      appearance: none;
+      cursor: pointer;
+      font: inherit;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.03);
+      color: var(--text); text-decoration: none;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.08); }
+
+    .anchor-label {
+      font-family: "SF Mono", "JetBrains Mono", monospace;
+      font-size: 10px;
+      fill: rgba(255,255,255,0.9);
+      text-anchor: middle;
+      font-weight: 600;
+    }
+    .axis-label {
+      font-size: 10px;
+      fill: rgba(255,255,255,0.5);
+      font-family: "SF Mono", "JetBrains Mono", monospace;
+    }
+  </style>
+</head>
+<body>
+  <main class="debug-wrap">
+    <button type="button" class="back-link" id="back-btn">← 返回上一级</button>
+    <h1 class="debug-title" id="t-title">Pattern Debug</h1>
+    <p class="debug-subtitle" id="t-subtitle">扫描器识别出的形态结构可视化。绿点=肩膀/颈线/目标，红点=头部，金点=颈线峰值，虚线=颈线与目标。</p>
+
+    <div class="debug-meta" id="meta"></div>
+
+    <section class="chart-panel">
+      <svg id="chart" class="chart-svg" viewBox="0 0 1000 480" fill="none" aria-label="Pattern debug chart"></svg>
+      <div class="legend">
+        <span class="legend-item role-ls"><span class="legend-dot"></span>左肩 Left Shoulder</span>
+        <span class="legend-item role-lp"><span class="legend-dot"></span>颈线峰1 Left Peak</span>
+        <span class="legend-item role-head"><span class="legend-dot"></span>头部 Head</span>
+        <span class="legend-item role-rp"><span class="legend-dot"></span>颈线峰2 Right Peak</span>
+        <span class="legend-item role-rs"><span class="legend-dot"></span>右肩 Right Shoulder</span>
+        <span class="legend-item role-neckline"><span class="legend-line"></span>颈线 Neckline</span>
+        <span class="legend-item role-target"><span class="legend-line"></span>目标 Target</span>
+      </div>
+      <ul class="pattern-list" id="patterns"></ul>
+    </section>
+  </main>
+  <script>
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const params = new URLSearchParams(location.search);
+    const symbol = params.get("symbol") || "HE=F";
+    const fileName = `debug-${symbol.replace(/[=-]/g, "").toLowerCase()}.json`;
+
+    document.getElementById("back-btn").addEventListener("click", () => {
+      if (history.length > 1 && document.referrer) {
+        history.back();
+      } else {
+        location.href = "./";
+      }
+    });
+
+    const chart = document.getElementById("chart");
+    const metaEl = document.getElementById("meta");
+    const patternsEl = document.getElementById("patterns");
+    const titleEl = document.getElementById("t-title");
+
+    const W = 1000, H = 480;
+    const PAD = { top: 40, right: 30, bottom: 40, left: 60 };
+
+    function create(tag, attrs = {}, text = "") {
+      const el = document.createElementNS(SVG_NS, tag);
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      if (text) el.textContent = text;
+      return el;
+    }
+
+    function formatDate(str) {
+      return str.slice(5); // MM-DD
+    }
+
+    function buildMeta(data) {
+      const primary = data.primaryPattern || "—";
+      const dir = data.netDirection || "";
+      const dirClass = dir.includes("涨") ? "bull" : dir.includes("跌") ? "bear" : "";
+      const cells = [
+        ["Symbol", data.symbol],
+        ["Name", data.name],
+        ["Primary", primary],
+        ["Direction", dir, dirClass],
+        ["Last Price", data.lastPrice],
+        ["Last Date", data.lastDate],
+        ["Target", data.primaryTarget],
+        ["Stop", data.stopLoss],
+      ];
+      metaEl.innerHTML = cells.map(([l, v, cls = ""]) =>
+        `<div class="debug-meta-cell">
+          <span class="debug-meta-label">${l}</span>
+          <span class="debug-meta-value ${cls}">${v ?? "—"}</span>
+        </div>`
+      ).join("");
+    }
+
+    function listPatterns(data) {
+      patternsEl.innerHTML = data.patterns.map((p) => {
+        const extras = Object.entries(p)
+          .filter(([k]) => !["pattern", "symbol", "name", "last_price", "last_date", "direction"].includes(k))
+          .map(([k, v]) => `<strong>${k}</strong>${typeof v === "number" ? v.toFixed(3) : v}`)
+          .join(" ");
+        return `<li><strong>${p.pattern}</strong> · ${p.direction || ""} · ${p.status || ""}<br><span style="color:var(--muted);font-size:11px">${extras}</span></li>`;
+      }).join("");
+    }
+
+    function drawChart(data) {
+      const bars = data.bars;
+      const closes = bars.map((b) => b.close);
+      const highs = bars.map((b) => b.high);
+      const lows = bars.map((b) => b.low);
+
+      const neckline = data.patterns.find((p) => p.neckline)?.neckline;
+      const target = data.primaryTarget;
+      const stop = data.stopLoss;
+
+      const yMin = Math.min(...lows, target ?? Infinity, stop ?? Infinity) * 0.97;
+      const yMax = Math.max(...highs, target ?? -Infinity, stop ?? -Infinity) * 1.03;
+
+      const innerW = W - PAD.left - PAD.right;
+      const innerH = H - PAD.top - PAD.bottom;
+
+      const xScale = (i) => PAD.left + (i / (bars.length - 1)) * innerW;
+      const yScale = (p) => PAD.top + innerH - ((p - yMin) / (yMax - yMin)) * innerH;
+
+      // Y grid lines
+      const gridCount = 5;
+      for (let g = 0; g <= gridCount; g++) {
+        const price = yMin + (yMax - yMin) * (g / gridCount);
+        const y = yScale(price);
+        chart.appendChild(create("line", {
+          x1: PAD.left, x2: W - PAD.right, y1: y, y2: y,
+          stroke: "rgba(255,255,255,0.06)", "stroke-width": 1,
+        }));
+        chart.appendChild(create("text", {
+          x: PAD.left - 8, y: y + 3, "text-anchor": "end", class: "axis-label",
+        }, price.toFixed(1)));
+      }
+
+      // Candle-like line chart (HLC bars)
+      bars.forEach((b, i) => {
+        const x = xScale(i);
+        const yH = yScale(b.high);
+        const yL = yScale(b.low);
+        const yC = yScale(b.close);
+        const yO = yScale(b.open);
+        const bullish = b.close >= b.open;
+        const color = bullish ? "rgba(126,231,176,0.4)" : "rgba(255,140,140,0.4)";
+        chart.appendChild(create("line", {
+          x1: x, x2: x, y1: yH, y2: yL,
+          stroke: color, "stroke-width": 1.2,
+        }));
+        const top = Math.min(yO, yC);
+        const h = Math.max(1.5, Math.abs(yC - yO));
+        const bodyColor = bullish ? "rgba(126,231,176,0.85)" : "rgba(255,140,140,0.85)";
+        chart.appendChild(create("rect", {
+          x: x - 2.5, y: top, width: 5, height: h,
+          fill: bodyColor,
+        }));
+      });
+
+      // Close line overlay (subtle)
+      let linePath = "";
+      closes.forEach((c, i) => {
+        linePath += `${i === 0 ? "M" : "L"} ${xScale(i)} ${yScale(c)} `;
+      });
+      chart.appendChild(create("path", {
+        d: linePath.trim(),
+        stroke: "rgba(255,255,255,0.22)",
+        "stroke-width": 1.4,
+        fill: "none",
+      }));
+
+      // X axis dates
+      const labelIndices = [0, Math.floor(bars.length * 0.25), Math.floor(bars.length * 0.5), Math.floor(bars.length * 0.75), bars.length - 1];
+      labelIndices.forEach((i) => {
+        chart.appendChild(create("text", {
+          x: xScale(i), y: H - PAD.bottom + 20, "text-anchor": "middle", class: "axis-label",
+        }, bars[i].date.slice(2)));
+      });
+
+      // Pattern anchors (Inv H&S or H&S Top)
+      const hs = data.patterns.find((p) => p.left_shoulder !== undefined);
+      if (hs) {
+        const anchors = [
+          { idx: hs.left_shoulder, role: "ls", label: "LS", color: "#7ee7b0", price: lows[hs.left_shoulder] },
+          { idx: hs.left_peak, role: "lp", label: "LP", color: "#f5d87a", price: highs[hs.left_peak] },
+          { idx: hs.head, role: "head", label: "HEAD", color: "#ff8c8c", price: lows[hs.head] },
+          { idx: hs.right_peak, role: "rp", label: "RP", color: "#f5d87a", price: highs[hs.right_peak] },
+          { idx: hs.right_shoulder, role: "rs", label: "RS", color: "#7ee7b0", price: lows[hs.right_shoulder] },
+        ];
+
+        // Lines connecting anchors (pattern shape)
+        let shapePath = "";
+        anchors.forEach((a, i) => {
+          shapePath += `${i === 0 ? "M" : "L"} ${xScale(a.idx)} ${yScale(a.price)} `;
+        });
+        chart.appendChild(create("path", {
+          d: shapePath.trim(),
+          stroke: "rgba(255,255,255,0.55)",
+          "stroke-width": 2.5,
+          "stroke-dasharray": "0",
+          fill: "none",
+          class: "pattern-shape",
+          opacity: 0,
+        }));
+
+        // Neckline (horizontal at hs.neckline, extended to last bar)
+        if (hs.neckline) {
+          const yNeck = yScale(hs.neckline);
+          chart.appendChild(create("line", {
+            x1: xScale(hs.left_peak), x2: W - PAD.right,
+            y1: yNeck, y2: yNeck,
+            stroke: "#a0a0ff",
+            "stroke-width": 2,
+            "stroke-dasharray": "6 4",
+            class: "neckline-anim",
+            opacity: 0,
+          }));
+          chart.appendChild(create("text", {
+            x: W - PAD.right - 6, y: yNeck - 6, "text-anchor": "end",
+            fill: "#a0a0ff", "font-size": "11px", "font-family": "monospace",
+            class: "neckline-label", opacity: 0,
+          }, `Neckline ${hs.neckline}`));
+        }
+
+        // Target line (horizontal)
+        if (target) {
+          const yT = yScale(target);
+          chart.appendChild(create("line", {
+            x1: xScale(hs.right_shoulder), x2: W - PAD.right,
+            y1: yT, y2: yT,
+            stroke: "#7ee7b0",
+            "stroke-width": 2,
+            "stroke-dasharray": "6 4",
+            class: "target-anim", opacity: 0,
+          }));
+          chart.appendChild(create("text", {
+            x: W - PAD.right - 6, y: yT - 6, "text-anchor": "end",
+            fill: "#7ee7b0", "font-size": "11px", "font-family": "monospace",
+            class: "target-label", opacity: 0,
+          }, `Target ${target}`));
+        }
+
+        // Anchor markers (big dots with labels)
+        anchors.forEach((a, i) => {
+          const x = xScale(a.idx);
+          const y = yScale(a.price);
+          chart.appendChild(create("circle", {
+            cx: x, cy: y, r: 0,
+            fill: a.color, "fill-opacity": 0.25,
+            stroke: a.color, "stroke-width": 2.5,
+            class: "anchor-dot", "data-i": i,
+          }));
+          chart.appendChild(create("text", {
+            x: x, y: a.role === "head" ? y + 22 : y - 12,
+            class: "anchor-label",
+            opacity: 0, "data-i": i,
+            fill: a.color,
+          }, a.label));
+        });
+
+        // Animate reveal
+        animateReveal(anchors);
+      }
+    }
+
+    function animateReveal(anchors) {
+      const dots = document.querySelectorAll(".anchor-dot");
+      const labels = document.querySelectorAll(".anchor-label");
+      const shape = document.querySelector(".pattern-shape");
+      const neckline = document.querySelector(".neckline-anim");
+      const necklineLabel = document.querySelector(".neckline-label");
+      const targetLine = document.querySelector(".target-anim");
+      const targetLabel = document.querySelector(".target-label");
+
+      let step = 0;
+      function next() {
+        if (step < anchors.length) {
+          const d = dots[step];
+          const l = labels[step];
+          if (d) {
+            d.setAttribute("r", "9");
+            d.style.transition = "r 400ms ease";
+          }
+          if (l) {
+            l.setAttribute("opacity", "1");
+            l.style.transition = "opacity 400ms ease";
+          }
+          step++;
+          setTimeout(next, 450);
+        } else if (step === anchors.length) {
+          if (shape) { shape.style.transition = "opacity 600ms ease"; shape.setAttribute("opacity", "0.9"); }
+          step++;
+          setTimeout(next, 650);
+        } else if (step === anchors.length + 1) {
+          if (neckline) { neckline.style.transition = "opacity 500ms ease"; neckline.setAttribute("opacity", "1"); }
+          if (necklineLabel) { necklineLabel.style.transition = "opacity 500ms ease"; necklineLabel.setAttribute("opacity", "1"); }
+          step++;
+          setTimeout(next, 550);
+        } else if (step === anchors.length + 2) {
+          if (targetLine) { targetLine.style.transition = "opacity 500ms ease"; targetLine.setAttribute("opacity", "1"); }
+          if (targetLabel) { targetLabel.style.transition = "opacity 500ms ease"; targetLabel.setAttribute("opacity", "1"); }
+        }
+      }
+      setTimeout(next, 500);
+    }
+
+    fetch(`./data/${fileName}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        const suffix = data.primaryPattern ? ` — ${data.primaryPattern}` : "";
+        titleEl.textContent = `${data.name || data.symbol} (${data.symbol})${suffix}`;
+        if ((!data.patterns || data.patterns.length === 0) && document.getElementById("t-subtitle")) {
+          document.getElementById("t-subtitle").textContent = "该品种本周无识别形态，仅显示周线价格。";
+        }
+        buildMeta(data);
+        drawChart(data);
+        listPatterns(data);
+      })
+      .catch((err) => {
+        titleEl.textContent = `加载失败 / Load failed: ${err.message}`;
+      });
+  </script>
+</body>
+</html>

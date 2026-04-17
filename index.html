@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chart Pattern Loaders — Peter Brandt</title>
+    <link rel="stylesheet" href="./style.css?v=9" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-bar">
+          <div class="lang-switch" role="group" aria-label="Language switch">
+            <button id="lang-en" class="lang-button is-active" type="button">EN</button>
+            <button id="lang-zh" class="lang-button" type="button">中文</button>
+          </div>
+          <a
+            class="repo-link"
+            href="https://x.com/william69059201"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <svg
+              class="repo-link-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="currentColor"
+            >
+              <path
+                d="M18.9 2H22l-6.77 7.74L23 22h-6.1l-4.77-6.24L6.67 22H3.56l7.24-8.28L1 2h6.26l4.31 5.7L18.9 2Zm-1.09 18h1.72L6.32 3.9H4.47L17.81 20Z"
+              ></path>
+            </svg>
+            X
+          </a>
+        </div>
+        <p id="hero-eyebrow" class="eyebrow">Mathematical Curve Motion</p>
+        <h1 id="hero-title">A Gallery of Mathematical Loading Animations</h1>
+        <nav class="view-tabs" role="tablist">
+          <button id="tab-gallery" class="view-tab is-active" type="button" role="tab" data-view="gallery">Gallery</button>
+          <button id="tab-scan" class="view-tab" type="button" role="tab" data-view="scan">Live Scan</button>
+        </nav>
+      </section>
+
+      <section class="showcase" id="view-gallery">
+        <section id="gallery" class="gallery" aria-label="Mathematical curve animation gallery"></section>
+      </section>
+
+      <section class="showcase scan-view" id="view-scan" hidden>
+        <div class="scan-header">
+          <div class="scan-summary" id="scan-summary">
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-sum-label="signals">Signals</span><span class="scan-summary-value" id="scan-signals">—</span></div>
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-sum-label="bullish">Bullish</span><span class="scan-summary-value scan-bull" id="scan-bullish">—</span></div>
+            <div class="scan-summary-cell"><span class="scan-summary-label" data-sum-label="bearish">Bearish</span><span class="scan-summary-value scan-bear" id="scan-bearish">—</span></div>
+            <div class="scan-summary-cell scan-summary-meta"><span class="scan-summary-label" data-sum-label="asof">As of</span><span class="scan-summary-value" id="scan-asof">—</span></div>
+          </div>
+        </div>
+        <section id="scan-grid" class="scan-grid" aria-label="Weekly scan candidates"></section>
+        <p id="scan-empty" class="scan-empty" hidden>Loading weekly scan data…</p>
+      </section>
+
+    </main>
+
+    <div id="viewer-modal" class="viewer-modal" aria-hidden="true">
+      <div id="viewer-backdrop" class="viewer-backdrop"></div>
+      <section id="viewer" class="viewer" aria-live="polite" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
+        <div class="viewer-preview">
+          <div class="viewer-stage">
+            <svg
+              id="viewer-svg"
+              class="viewer-svg"
+              aria-hidden="true"
+              viewBox="0 0 100 100"
+              fill="none"
+            >
+              <g id="viewer-group">
+                <path
+                  id="viewer-path"
+                  stroke="currentColor"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  opacity="0.1"
+                ></path>
+              </g>
+            </svg>
+          </div>
+          <div class="viewer-copy">
+            <p id="viewer-tag" class="viewer-tag"></p>
+            <h2 id="viewer-title" class="viewer-title"></h2>
+            <p id="viewer-desc" class="viewer-desc"></p>
+            <div class="viewer-section">
+              <p id="viewer-trading-label" class="viewer-code-label">Trading Points</p>
+              <dl id="viewer-trading" class="viewer-trading"></dl>
+            </div>
+            <div class="viewer-section">
+              <p id="viewer-checklist-label" class="viewer-code-label">Checklist</p>
+              <ul id="viewer-checklist" class="viewer-checklist"></ul>
+            </div>
+          </div>
+        </div>
+
+        <aside class="viewer-code-panel">
+          <div class="viewer-code-head">
+            <p id="viewer-code-label" class="viewer-code-label">Wisdom</p>
+            <div class="viewer-actions">
+              <button id="viewer-close" class="viewer-close" type="button">Close</button>
+            </div>
+          </div>
+          <div id="viewer-code" class="viewer-code"></div>
+          <div class="viewer-notes-block">
+            <p id="viewer-notes-label" class="viewer-code-label">Brandt's Notes</p>
+            <ul id="viewer-notes" class="viewer-notes"></ul>
+          </div>
+        </aside>
+      </section>
+    </div>
+
+    <script src="./main.js?v=9"></script>
+  </body>
+</html>
