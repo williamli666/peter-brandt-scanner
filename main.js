@@ -1205,7 +1205,9 @@ function renderScanCard(candidate, rankIndex) {
   const patternChips = (candidate.patterns || [])
     .map((p) => {
       const age = p.ageWeeks != null ? ` · ${p.ageWeeks}w` : "";
-      return `<span class="scan-pattern-chip ${p.direction}">${escapeHtml(patternLabel(p.type))}${age}</span>`;
+      const rrTag = p.rr != null ? ` · ${p.rr}:1` : "";
+      const primary = p.isPrimary ? " is-primary" : "";
+      return `<span class="scan-pattern-chip ${p.direction}${primary}">${escapeHtml(patternLabel(p.type))}${age}${rrTag}</span>`;
     })
     .join("");
 
@@ -1227,6 +1229,15 @@ function renderScanCard(candidate, rankIndex) {
     ? candidate.finalScore.toFixed(1)
     : "";
 
+  const vc = trade.volumeConfirmed;
+  const vr = trade.volumeRatio;
+  let volChip = "";
+  if (vc === true) {
+    volChip = `<span class="vol-badge vol-ok" title="${currentLanguage === "zh" ? "突破放量 " : "volume confirmed "}${vr}×avg">✓ Vol ${vr}×</span>`;
+  } else if (vc === false) {
+    volChip = `<span class="vol-badge vol-warn" title="${currentLanguage === "zh" ? "突破量能不足 " : "weak breakout volume "}${vr}×avg">⚠ Vol ${vr}×</span>`;
+  }
+
   const card = document.createElement("a");
   card.className = "scan-card";
   card.href = `./debug.html?symbol=${encodeURIComponent(candidate.symbol)}`;
@@ -1242,6 +1253,7 @@ function renderScanCard(candidate, rankIndex) {
     <div class="scan-card-strength">
       <span class="scan-card-score" title="Score">${renderStars(candidate.score)}</span>
       <span class="scan-card-final">${finalScore}</span>
+      ${volChip}
     </div>
     <div class="scan-card-patterns">${patternChips}</div>
     <dl class="scan-card-details">${details}</dl>

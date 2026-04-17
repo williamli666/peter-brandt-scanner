@@ -372,6 +372,32 @@ body.modal-open {
 .scan-pattern-chip.bull { border-color: rgba(126, 231, 176, 0.35); color: #9ff0c2; }
 .scan-pattern-chip.bear { border-color: rgba(255, 140, 140, 0.35); color: #ffa8a8; }
 
+.scan-pattern-chip.is-primary {
+  background: rgba(245, 216, 122, 0.12);
+  border-color: rgba(245, 216, 122, 0.4);
+  font-weight: 600;
+}
+
+.vol-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  margin-left: auto;
+}
+
+.vol-ok {
+  background: rgba(126, 231, 176, 0.15);
+  color: #7ee7b0;
+  border: 1px solid rgba(126, 231, 176, 0.35);
+}
+
+.vol-warn {
+  background: rgba(255, 200, 100, 0.12);
+  color: #ffc96e;
+  border: 1px solid rgba(255, 200, 100, 0.35);
+}
+
 .scan-card-score {
   color: #f5d87a;
   letter-spacing: 0.12em;

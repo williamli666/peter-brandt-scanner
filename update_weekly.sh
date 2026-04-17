@@ -25,12 +25,26 @@ log "Step 2: building scan_latest.json"
 cd "$ROOT"
 python3 build_scan_data.py >> "$LOG" 2>&1 || { log "FAIL: build_scan_data"; exit 1; }
 
-# 3. Regenerate debug JSONs for all symbols
-log "Step 3: building debug JSONs (101 symbols)"
+# 3. Archive this week's scan (for later backtest)
+log "Step 3: archiving scan_latest.json"
+ARCHIVE_DIR="$ROOT/data/archive"
+mkdir -p "$ARCHIVE_DIR"
+ARCHIVE_FILE="$ARCHIVE_DIR/$(date +%Y-%m-%d).json"
+cp "$ROOT/data/scan_latest.json" "$ARCHIVE_FILE" && log "  → $ARCHIVE_FILE"
+
+# 4. Regenerate debug JSONs for all symbols
+log "Step 4: building debug JSONs (101 symbols)"
 python3 build_pattern_debug.py --all >> "$LOG" 2>&1 || { log "FAIL: build_pattern_debug"; exit 1; }
 
-# 4. Deploy to VPS
-log "Step 4: deploying to VPS $VPS_HOST"
+# 5. Commit archive + refreshed data to git
+log "Step 5: committing weekly snapshot to git"
+cd "$ROOT"
+git add data/ >> "$LOG" 2>&1 || true
+git commit -m "data: weekly scan snapshot $(date +%Y-%m-%d)" >> "$LOG" 2>&1 || log "  (nothing to commit)"
+git push >> "$LOG" 2>&1 || log "  (git push failed, continuing)"
+
+# 6. Deploy to VPS
+log "Step 6: deploying to VPS $VPS_HOST"
 # Read VPS password from keychain or env — fall back to file-based secret
 VPS_PASS="${VPS_PASS:-$(security find-generic-password -s 'peter-brandt-vps' -w 2>/dev/null || echo '')}"
 if [ -z "$VPS_PASS" ]; then

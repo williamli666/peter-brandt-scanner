@@ -175,13 +175,111 @@ def fetch_weekly_closes(symbol: str, weeks: int = WEEKS) -> list[float]:
     return [round(float(c), 4) for c in closes]
 
 
+# OHLCV cache so we only fetch each symbol once during candidate build
+_OHLCV_CACHE: dict[str, dict] = {}
+
+
+def fetch_weekly_ohlcv(symbol: str) -> dict | None:
+    """Return {closes, highs, lows, volumes} for the last 2y of weekly bars."""
+    if symbol in _OHLCV_CACHE:
+        return _OHLCV_CACHE[symbol]
+    try:
+        df = yf.Ticker(symbol).history(period="2y", interval="1wk", auto_adjust=False)
+        df = df.dropna(subset=["Close"])
+        if df.empty:
+            return None
+        data = {
+            "closes": [float(x) for x in df["Close"].tolist()],
+            "highs": [float(x) for x in df["High"].tolist()],
+            "lows": [float(x) for x in df["Low"].tolist()],
+            "volumes": [float(x) if x == x else 0 for x in df["Volume"].tolist()],
+        }
+        _OHLCV_CACHE[symbol] = data
+        return data
+    except Exception:
+        return None
+
+
+def check_volume_confirmation(symbol: str, pattern: dict) -> dict:
+    """Verify the neckline-break bar volume is elevated vs 20-week average.
+
+    Returns {"confirmed": bool, "ratio": float, "breakoutIdx": int}
+    or {"confirmed": None, ...} when no breakout has occurred yet.
+    """
+    if not pattern:
+        return {"confirmed": None}
+    status = pattern.get("status", "")
+    if "已突破" not in status:
+        return {"confirmed": None, "reason": "no breakout yet"}
+
+    ohlcv = fetch_weekly_ohlcv(symbol)
+    if not ohlcv:
+        return {"confirmed": None, "reason": "no OHLCV data"}
+
+    closes = ohlcv["closes"]
+    volumes = ohlcv["volumes"]
+    rs_idx = pattern.get("right_shoulder")
+    neckline = pattern.get("neckline")
+    if rs_idx is None or neckline is None:
+        return {"confirmed": None, "reason": "missing anchors"}
+
+    # For H&S Top (bear): breakout = first bar after RS that closes below neckline.
+    # For Inv H&S (bull): first bar after RS that closes above neckline.
+    direction = pattern.get("direction", "")
+    is_bull = "涨" in direction
+    breakout_idx = None
+    for i in range(int(rs_idx), len(closes)):
+        if is_bull and closes[i] > neckline:
+            breakout_idx = i
+            break
+        if not is_bull and closes[i] < neckline:
+            breakout_idx = i
+            break
+    if breakout_idx is None:
+        return {"confirmed": None, "reason": "breakout bar not found"}
+
+    # Baseline volume: 20-week average leading up to the breakout bar, excluding it.
+    lookback = volumes[max(0, breakout_idx - 20):breakout_idx]
+    if not lookback:
+        return {"confirmed": None, "reason": "insufficient history"}
+    avg_vol = sum(lookback) / len(lookback)
+    if avg_vol <= 0:
+        return {"confirmed": None, "reason": "zero average"}
+    bo_vol = volumes[breakout_idx]
+    ratio = round(bo_vol / avg_vol, 2)
+    return {
+        "confirmed": ratio >= 1.5,
+        "ratio": ratio,
+        "breakoutIdx": breakout_idx,
+    }
+
+
+def calc_pattern_rr(pattern: dict, shared_stop: float | None) -> float | None:
+    """Per-pattern R:R when we have neckline/target (H&S types)."""
+    entry = pattern.get("neckline")
+    target = pattern.get("target")
+    if not (entry and target and shared_stop):
+        return None
+    risk = abs(entry - shared_stop)
+    reward = abs(target - entry)
+    if risk <= 0:
+        return None
+    return round(reward / risk, 2)
+
+
 def build_candidate(symbol: str, all_patterns: list[dict]) -> dict:
     meta = SYMBOL_META[symbol]
     symbol_patterns = [p for p in all_patterns if p["symbol"] == symbol]
+    trade = get_trade_info(symbol, all_patterns)
+    shared_stop = trade.get("stop")
+    primary_cn = trade.get("primaryPattern") or ""
 
     patterns_out = []
     for p in symbol_patterns:
         p_cn = p["pattern"]
+        rr = calc_pattern_rr(p, shared_stop)
+        is_primary = p_cn == primary_cn
+        vol_info = check_volume_confirmation(symbol, p) if is_primary else {"confirmed": None}
         patterns_out.append({
             "type": PATTERN_ENMAP.get(p_cn, p_cn),
             "typeZh": PATTERN_ZHMAP.get(p_cn, p_cn),
@@ -191,9 +289,15 @@ def build_candidate(symbol: str, all_patterns: list[dict]) -> dict:
             "resistance": p.get("resistance"),
             "support": p.get("support"),
             "ageWeeks": p.get("age_weeks"),
+            "entry": p.get("neckline"),
+            "target": p.get("target"),
+            "rr": rr,
+            "isPrimary": is_primary,
         })
 
-    trade = get_trade_info(symbol, all_patterns)
+    # Volume confirmation for the primary pattern
+    primary_pattern = next((p for p in symbol_patterns if p["pattern"] == primary_cn), None)
+    vol = check_volume_confirmation(symbol, primary_pattern) if primary_pattern else {"confirmed": None}
 
     return {
         "symbol": symbol,
@@ -213,6 +317,8 @@ def build_candidate(symbol: str, all_patterns: list[dict]) -> dict:
             "target": trade.get("target"),
             "riskPct": trade.get("riskPct"),
             "rr": trade.get("rr"),
+            "volumeConfirmed": vol.get("confirmed"),
+            "volumeRatio": vol.get("ratio"),
         },
     }
 
