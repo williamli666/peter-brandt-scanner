@@ -68,7 +68,7 @@ case "$SRC" in
     ;;
   futures)
     log "=== refreshing Futures daily report ==="
-    cd "$HOME/Desktop/期货日日报"
+    cd "$HOME/Desktop/期权卖方策略风险控制/期货日日报"
     /usr/bin/python3 daily_report.py || log "  (report skipped/failed)"
     cd "$ROOT"
     python3 build_reports.py futures

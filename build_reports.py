@@ -4,7 +4,7 @@ Build per-source report indices used by the website's report tabs.
 
 Currently handles three sources:
   - daily    : ~/Desktop/gary-norden-book/YYYY-MM-DD.{md,html}
-  - futures  : ~/Desktop/期货日日报/reports/期货日日报_YYYY-MM-DD.html
+  - futures  : ~/Desktop/期权卖方策略风险控制/期货日日报/reports/期货日日报_YYYY-MM-DD.html
   - munger   : ~/Desktop/芒格200周均线/YYYY-MM-DD.html
 
 For each source, copies HTMLs into data/<subdir>/ and emits
@@ -32,7 +32,7 @@ SOURCES = [
     },
     {
         "key": "futures",
-        "src_dir": DESKTOP / "期货日日报/reports",
+        "src_dir": DESKTOP / "期权卖方策略风险控制/期货日日报/reports",
         "pattern": re.compile(r"^期货日日报_(\d{4}-\d{2}-\d{2})\.html$"),
         "out_subdir": "futures",
         "index_file": "futures_index.json",
